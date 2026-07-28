@@ -51,6 +51,9 @@ make EXAMPLE=button_interrupt
 # Flash via ST-Link
 make flash
 
+# Flash via USB DFU (STM32duino/Maple bootloader)
+make dfu
+
 # Clean
 make clean
 ```

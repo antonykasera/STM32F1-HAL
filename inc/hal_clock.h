@@ -11,9 +11,14 @@
 
 #include "hal_types.h"
 #include "stm32f103xb.h"
+#include <stdint.h>
 
-void hal_sysclock_config(void);
-void hal_deinit_sysclock(void);
+void hal_sysclock_init(void);
+void hal_sysclock_deinit(void);
+
+void hal_systick_init(void);
+uint32_t hal_get_tick(void);
+void hal_delay_ms(uint32_t delay_ms);
 
 void hal_gpio_init_port_clock(GPIO_TypeDef *port);
 void hal_gpio_deinit_port_clock(GPIO_TypeDef *port);

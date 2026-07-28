@@ -16,7 +16,8 @@ INCLUDES = -Iinc -Icmsis/inc
 
 CFLAGS  = $(MCU_FLAGS) $(DEFS) $(INCLUDES) \
           -Wall -Wextra -Wshadow \
-          -O0 -g3 -std=c11 \
+          -Wconversion -Wsign-conversion -Wdouble-promotion \
+          -O1 -g3 -std=c11 \
           -ffunction-sections -fdata-sections
 
 ASFLAGS = $(MCU_FLAGS)
@@ -69,6 +70,10 @@ $(BUILD):
 flash: $(BUILD)/$(TARGET).bin
 	st-flash write $(BUILD)/$(TARGET).bin 0x8000000
 
+# Flash via USB DFU (STM32duino/Maple bootloader: alt-setting 2, VID:PID 1EAF:0003)
+dfu: $(BUILD)/$(TARGET).bin
+	sudo dfu-util -w -a 2 -d 1EAF:0003 -D $(BUILD)/$(TARGET).bin
+
 clean:
 	rm -rf $(BUILD)
 
@@ -90,4 +95,4 @@ host-test:
 	./$(HOST_BUILD)/test_runner
 	@echo "--- Host tests passed ---"
 
-.PHONY: all size flash clean compdb host-test
+.PHONY: all size flash dfu clean compdb host-test
