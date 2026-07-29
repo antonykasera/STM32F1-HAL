@@ -107,21 +107,21 @@ static void test_pin_init_pull_direction(void) {
 static void test_write_and_toggle(void) {
   GPIO_TypeDef g = {0};
 
-  hal_gpio_write(&g, 13, true);
+  hal_gpio_pin_write(&g, 13, true);
   ASSERT_EQ(g.BSRR, (1u << 13));
 
   g.BRR = 0;
-  hal_gpio_write(&g, 13, false);
+  hal_gpio_pin_write(&g, 13, false);
   ASSERT_EQ(g.BRR, (1u << 13));
 
   g.ODR = (1u << 9);
   g.BSRR = 0;
-  hal_gpio_toggle(&g, 9);
+  hal_gpio_pin_toggle(&g, 9);
   ASSERT_EQ(g.BSRR, (1u << (9 + 16)));
 
   g.ODR = 0;
   g.BSRR = 0;
-  hal_gpio_toggle(&g, 9);
+  hal_gpio_pin_toggle(&g, 9);
   ASSERT_EQ(g.BSRR, (1u << 9));
 }
 

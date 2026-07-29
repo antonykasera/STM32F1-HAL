@@ -57,27 +57,28 @@ void hal_gpio_pin_init(GPIO_TypeDef *port, uint8_t pin, GPIO_Config *cfg);
 void hal_gpio_pin_deinit(GPIO_TypeDef *port, uint8_t pin);
 
 void hal_gpio_pin_lock(GPIO_TypeDef *port, uint8_t pin);
-void hal_gpio_en_alternate(GPIO_TypeDef *port, uint8_t pin);
+void hal_gpio_alternate_en(GPIO_TypeDef *port, uint8_t pin);
 
-static inline void hal_gpio_write_port(GPIO_TypeDef *port, uint16_t mask) {
+static inline void hal_gpio_port_write(GPIO_TypeDef *port, uint16_t mask) {
   port->ODR = mask;
 };
-static inline uint16_t hal_gpio_read_port(GPIO_TypeDef *port) {
+static inline uint16_t hal_gpio_port_read(GPIO_TypeDef *port) {
   return (uint16_t)port->IDR;
 };
 
-static inline void hal_gpio_write(GPIO_TypeDef *port, uint8_t pin, bool level) {
+static inline void hal_gpio_pin_write(GPIO_TypeDef *port, uint8_t pin,
+                                      bool level) {
   if (level) {
     port->BSRR = (1U << pin);
   } else {
     port->BRR = (1U << pin);
   }
 };
-static inline bool hal_gpio_read(GPIO_TypeDef *port, uint8_t pin) {
+static inline bool hal_gpio_pin_read(GPIO_TypeDef *port, uint8_t pin) {
   return (port->IDR & (1U << pin)) ? true : false;
 };
 
-static inline void hal_gpio_toggle(GPIO_TypeDef *port, uint8_t pin) {
+static inline void hal_gpio_pin_toggle(GPIO_TypeDef *port, uint8_t pin) {
   port->BSRR = ((port->ODR & (1U << pin)) ? (1U << (pin + 16)) : (1U << pin));
 };
 

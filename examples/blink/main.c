@@ -12,6 +12,9 @@
 #include "stm32f103xb.h"
 #include <stdint.h>
 
+#define LED_PIN 13U
+#define LED_PORT GPIOC
+
 void SystemInit(void) {}
 
 int main(void) {
@@ -34,10 +37,10 @@ int main(void) {
 
   while (1) {
     // LED on
-    hal_gpio_write(LED_PORT, LED_PIN, 0);
+    hal_gpio_pin_write(LED_PORT, LED_PIN, 0U);
     hal_delay_ms(delay_ms);
     // LED off
-    hal_gpio_write(LED_PORT, LED_PIN, 1);
+    hal_gpio_pin_write(LED_PORT, LED_PIN, 1U);
     hal_delay_ms(delay_ms);
   }
 }

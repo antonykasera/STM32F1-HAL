@@ -11,8 +11,6 @@
 
 #include "stm32f103xb.h"
 
-#define SYSCLK_HZ 72000000
-#define LED_PIN 13
-#define LED_PORT GPIOC
+#define SYSCLK_HZ 72000000U
 
 #endif /* BOARD_H */
