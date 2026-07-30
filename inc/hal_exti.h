@@ -19,6 +19,15 @@ typedef void (*exti_callback_t)(void);
 
 void hal_exti_init(GPIO_TypeDef *port, uint8_t pin, EXTI_Edge_t edge);
 
+void hal_exti_deinit(uint8_t line);
+
+void hal_exti_soft_trigger(uint8_t line);
+
 void hal_exti_register_callback(uint8_t line, exti_callback_t cb);
 
+void hal_exti_set_priority(uint8_t line, uint8_t priority);
+
+void hal_exti_enable(uint8_t line);
+
+void hal_exti_disable(uint8_t line);
 #endif /* HAL_EXTI_H */
