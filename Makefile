@@ -8,6 +8,8 @@ EXAMPLE ?= blink
 CC      = arm-none-eabi-gcc
 AS      = arm-none-eabi-gcc
 OBJCOPY = arm-none-eabi-objcopy
+OBJDUMP = arm-none-eabi-objdump
+NM      = arm-none-eabi-nm
 SIZE    = arm-none-eabi-size
 
 MCU_FLAGS = -mcpu=cortex-m3 -mthumb -mfloat-abi=soft
@@ -17,7 +19,7 @@ INCLUDES = -Iinc -Icmsis/inc
 CFLAGS  = $(MCU_FLAGS) $(DEFS) $(INCLUDES) \
           -Wall -Wextra -Wshadow \
           -Wconversion -Wsign-conversion -Wdouble-promotion \
-          -O0 -g3 -std=c11 \
+          -Os -g3 -std=c11 \
           -ffunction-sections -fdata-sections
 
 ASFLAGS = $(MCU_FLAGS)
@@ -29,8 +31,8 @@ LDFLAGS = $(MCU_FLAGS) \
           -Wl,-Map=$(BUILD)/$(TARGET).map
 
 # link-time optimisation (release builds):
-# CFLAGS  += -flto
-# LDFLAGS += -flto
+CFLAGS  += -flto
+LDFLAGS += -flto
 
 HAL_SRCS  = $(wildcard src/$(FAMILY)/*.c)
 CMN_SRCS  = $(wildcard src/common/*.c)
@@ -77,7 +79,24 @@ dfu: $(BUILD)/$(TARGET).bin
 clean:
 	rm -rf $(BUILD)
 
-# Requires 'bear' 
+
+sections: $(BUILD)/$(TARGET).elf
+	$(SIZE) -A -d $<
+
+syms: $(BUILD)/$(TARGET).elf
+	$(NM) --print-size --size-sort --radix=d $< | tail -25
+
+disasm: $(BUILD)/$(TARGET).elf
+	$(OBJDUMP) -d -S $< > $(BUILD)/$(TARGET).lst
+	@echo "wrote $(BUILD)/$(TARGET).lst"
+
+stackusage:
+	$(MAKE) clean
+	$(MAKE) CFLAGS="$(MCU_FLAGS) $(DEFS) $(INCLUDES) -O1 -g3 -std=c11 -ffunction-sections -fdata-sections -fstack-usage" LDFLAGS="$(MCU_FLAGS) -Tlinker.ld -Wl,--gc-sections --specs=nano.specs --specs=nosys.specs" all
+	@echo "--- stack frames (bytes, largest first) ---"
+	@find $(BUILD) -name '*.su' -exec cat {} + | sort -t$$'\t' -k2 -nr | head -25
+
+# Requires 'bear'
 compdb: clean
 	bear -- $(MAKE) all
 
@@ -89,6 +108,7 @@ TEST_SRCS = $(wildcard test/host/*.c) \
             src/f1/hal_gpio_f1.c \
             src/f1/hal_clock_f1.c \
             src/f1/hal_timer_calc.c \
+            src/f1/hal_uart_calc.c \
             $(wildcard src/common/*.c)
 
 host-test:
@@ -97,4 +117,4 @@ host-test:
 	./$(HOST_BUILD)/test_runner
 	@echo "--- Host tests passed ---"
 
-.PHONY: all size flash dfu clean compdb host-test
+.PHONY: all size sections syms disasm stackusage flash dfu clean compdb host-test

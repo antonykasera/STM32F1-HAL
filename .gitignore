@@ -47,6 +47,8 @@ EWARM/
 
 .cache/
 compile_commands.json
+.clangd
+ref.md
 
 CMakeCache.txt
 CMakeFiles/
