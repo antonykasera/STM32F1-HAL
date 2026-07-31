@@ -53,7 +53,7 @@ static inline uint8_t gpio_cr_shift(uint8_t pin) { return (pin % 8) * 4; }
 
 uint8_t gpio_encode_config(GPIO_Mode mode, GPIO_Speed speed, GPIO_Pull pull);
 
-void hal_gpio_pin_init(GPIO_TypeDef *port, uint8_t pin, GPIO_Config *cfg);
+void hal_gpio_pin_init(GPIO_TypeDef *port, uint8_t pin, const GPIO_Config *cfg);
 void hal_gpio_pin_deinit(GPIO_TypeDef *port, uint8_t pin);
 
 void hal_gpio_pin_lock(GPIO_TypeDef *port, uint8_t pin);

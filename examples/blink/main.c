@@ -25,7 +25,7 @@ int main(void) {
   const uint32_t delay_ms = 1000U;
 
   // initialize the system clock
-  hal_sysclock_init();
+  hal_sysclock_init(&CLOCK_CONFIG_72MHZ_HSE);
   // initialize system tick to allow the use of the delay function
   hal_systick_init();
 

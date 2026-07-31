@@ -11,6 +11,4 @@
 
 #include "stm32f103xb.h"
 
-#define SYSCLK_HZ 72000000U
-
 #endif /* BOARD_H */

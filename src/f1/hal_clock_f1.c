@@ -6,43 +6,90 @@
  * SPDX-License-Identifier: MIT
  */
 
-#include "board.h"
 #include "hal_clock.h"
 #include "stm32f103xb.h"
 #include <stdint.h>
 
-/* TODO: Implement clock init, PLL config, SysTick setup for F1 family */
+#define HSI_HZ 8000000U
+#define HSE_HZ 8000000U
 
 static volatile uint32_t ms_ticks = 0;
 
-/*NOTE: allow core clock parameter next, maybe implement some form of clock
- * config struct*/
-void hal_sysclock_init(void) {
+static uint32_t sysclk_hz = HSI_HZ;
+static uint32_t hclk_hz = HSI_HZ;
+static uint32_t pclk1_hz = HSI_HZ;
+static uint32_t pclk2_hz = HSI_HZ;
 
-  RCC->CR |= RCC_CR_HSEON;
-  while (!(RCC->CR & RCC_CR_HSERDY)) {
+const Clock_Config CLOCK_CONFIG_72MHZ_HSE = {
+    .source = CLOCK_SOURCE_HSE,
+    .pll_mul = 9,
+    .ahb_div = CLOCK_AHB_DIV1,
+    .apb1_div = CLOCK_APB_DIV2,
+    .apb2_div = CLOCK_APB_DIV1,
+};
+
+static const uint32_t ahb_cfgr_bits[] = {
+    RCC_CFGR_HPRE_DIV1,   RCC_CFGR_HPRE_DIV2,   RCC_CFGR_HPRE_DIV4,
+    RCC_CFGR_HPRE_DIV8,   RCC_CFGR_HPRE_DIV16,  RCC_CFGR_HPRE_DIV64,
+    RCC_CFGR_HPRE_DIV128, RCC_CFGR_HPRE_DIV256, RCC_CFGR_HPRE_DIV512};
+
+static const uint16_t ahb_div_values[] = {1, 2, 4, 8, 16, 64, 128, 256, 512};
+
+static const uint32_t apb1_cfgr_bits[] = {
+    RCC_CFGR_PPRE1_DIV1, RCC_CFGR_PPRE1_DIV2, RCC_CFGR_PPRE1_DIV4,
+    RCC_CFGR_PPRE1_DIV8, RCC_CFGR_PPRE1_DIV16};
+
+static const uint32_t apb2_cfgr_bits[] = {
+    RCC_CFGR_PPRE2_DIV1, RCC_CFGR_PPRE2_DIV2, RCC_CFGR_PPRE2_DIV4,
+    RCC_CFGR_PPRE2_DIV8, RCC_CFGR_PPRE2_DIV16};
+
+static const uint8_t apb_div_values[] = {1, 2, 4, 8, 16};
+
+static uint32_t flash_latency_for(uint32_t freq_hz) {
+  if (freq_hz <= 24000000U) {
+    return FLASH_ACR_LATENCY_0;
+  }
+  if (freq_hz <= 48000000U) {
+    return FLASH_ACR_LATENCY_1;
+  }
+  return FLASH_ACR_LATENCY_2;
+}
+
+void hal_sysclock_init(const Clock_Config *cfg) {
+  uint32_t src_hz = (cfg->source == CLOCK_SOURCE_HSE) ? HSE_HZ : HSI_HZ;
+  sysclk_hz = src_hz * cfg->pll_mul;
+  hclk_hz = sysclk_hz / ahb_div_values[cfg->ahb_div];
+  pclk1_hz = hclk_hz / apb_div_values[cfg->apb1_div];
+  pclk2_hz = hclk_hz / apb_div_values[cfg->apb2_div];
+
+  if (cfg->source == CLOCK_SOURCE_HSE) {
+    RCC->CR |= RCC_CR_HSEON;
+    while (!(RCC->CR & RCC_CR_HSERDY)) {
+    }
+  } else {
+    RCC->CR |= RCC_CR_HSION;
+    while (!(RCC->CR & RCC_CR_HSIRDY)) {
+    }
   }
 
-  // FLASH Prefetch and Latency
   FLASH->ACR |= FLASH_ACR_PRFTBE;
   FLASH->ACR &= ~FLASH_ACR_LATENCY;
-  FLASH->ACR |= FLASH_ACR_LATENCY_2;
+  FLASH->ACR |= flash_latency_for(sysclk_hz);
 
-  // AHB Prescaler 72 MHz
   RCC->CFGR &= ~RCC_CFGR_HPRE;
-  RCC->CFGR |= RCC_CFGR_HPRE_DIV1;
+  RCC->CFGR |= ahb_cfgr_bits[cfg->ahb_div];
 
-  // APB1 Prescaler 36MHz
   RCC->CFGR &= ~RCC_CFGR_PPRE1;
-  RCC->CFGR |= RCC_CFGR_PPRE1_DIV2;
+  RCC->CFGR |= apb1_cfgr_bits[cfg->apb1_div];
 
-  // APB2 Prescaler 72MHz
   RCC->CFGR &= ~RCC_CFGR_PPRE2;
-  RCC->CFGR |= RCC_CFGR_PPRE2_DIV1;
+  RCC->CFGR |= apb2_cfgr_bits[cfg->apb2_div];
 
   RCC->CFGR &= ~(RCC_CFGR_PLLSRC | RCC_CFGR_PLLMULL);
-  RCC->CFGR |= RCC_CFGR_PLLSRC;
-  RCC->CFGR |= RCC_CFGR_PLLMULL9;
+  if (cfg->source == CLOCK_SOURCE_HSE) {
+    RCC->CFGR |= RCC_CFGR_PLLSRC;
+  }
+  RCC->CFGR |= ((uint32_t)(cfg->pll_mul - 2U) << RCC_CFGR_PLLMULL_Pos);
 
   RCC->CR |= RCC_CR_PLLON;
   while (!(RCC->CR & RCC_CR_PLLRDY)) {
@@ -69,10 +116,30 @@ void hal_sysclock_deinit(void) {
 
   FLASH->ACR &= ~FLASH_ACR_LATENCY;
   FLASH->ACR &= ~FLASH_ACR_PRFTBE;
+
+  sysclk_hz = HSI_HZ;
+  hclk_hz = HSI_HZ;
+  pclk1_hz = HSI_HZ;
+  pclk2_hz = HSI_HZ;
+}
+
+uint32_t hal_clock_get_sysclk_hz(void) { return sysclk_hz; }
+uint32_t hal_clock_get_hclk_hz(void) { return hclk_hz; }
+uint32_t hal_clock_get_pclk1_hz(void) { return pclk1_hz; }
+uint32_t hal_clock_get_pclk2_hz(void) { return pclk2_hz; }
+
+uint32_t hal_clock_get_timer_clk_hz(const TIM_TypeDef *tim) {
+  if ((tim == TIM2) || (tim == TIM3) || (tim == TIM4)) {
+    uint32_t apb1_div = hclk_hz / pclk1_hz;
+    return (apb1_div == 1U) ? pclk1_hz : (pclk1_hz * 2U);
+  }
+
+  uint32_t apb2_div = hclk_hz / pclk2_hz;
+  return (apb2_div == 1U) ? pclk2_hz : (pclk2_hz * 2U);
 }
 
 void hal_systick_init(void) {
-  SysTick->LOAD = (SYSCLK_HZ / 1000U) - 1;
+  SysTick->LOAD = (hal_clock_get_sysclk_hz() / 1000U) - 1U;
   SysTick->VAL = 0x00;
   SysTick->CTRL = (1 << 2) | (1 << 1) | (1 << 0);
 }
@@ -94,5 +161,15 @@ void hal_gpio_init_port_clock(GPIO_TypeDef *port) {
     RCC->APB2ENR |= RCC_APB2ENR_IOPBEN;
   } else if (port == GPIOC) {
     RCC->APB2ENR |= RCC_APB2ENR_IOPCEN;
+  }
+}
+
+void hal_gpio_deinit_port_clock(GPIO_TypeDef *port) {
+  if (port == GPIOA) {
+    RCC->APB2ENR &= ~RCC_APB2ENR_IOPAEN;
+  } else if (port == GPIOB) {
+    RCC->APB2ENR &= ~RCC_APB2ENR_IOPBEN;
+  } else if (port == GPIOC) {
+    RCC->APB2ENR &= ~RCC_APB2ENR_IOPCEN;
   }
 }

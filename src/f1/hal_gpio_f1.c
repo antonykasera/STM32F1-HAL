@@ -1,6 +1,6 @@
 /**
  * @file hal_gpio_f1.c
- * @brief STM32F1 GPIO implementation.
+ * @brief STM32F1 GPIO implementation
  *
  * Copyright (c) 2026. All rights reserved.
  * SPDX-License-Identifier: MIT
@@ -43,7 +43,8 @@ uint8_t gpio_encode_config(GPIO_Mode mode, GPIO_Speed speed, GPIO_Pull pull) {
   return (uint8_t)((cnf << 2) | mode_bits);
 }
 
-void hal_gpio_pin_init(GPIO_TypeDef *port, uint8_t pin, GPIO_Config *cfg) {
+void hal_gpio_pin_init(GPIO_TypeDef *port, uint8_t pin,
+                       const GPIO_Config *cfg) {
   volatile uint32_t *cr = gpio_cr_reg(port, pin);
   uint8_t shift = gpio_cr_shift(pin);
   uint8_t nibble = gpio_encode_config(cfg->mode, cfg->speed, cfg->pull);
@@ -56,4 +57,31 @@ void hal_gpio_pin_init(GPIO_TypeDef *port, uint8_t pin, GPIO_Config *cfg) {
     else
       port->BRR = (1U << pin);
   }
+}
+
+void hal_gpio_pin_deinit(GPIO_TypeDef *port, uint8_t pin) {
+  volatile uint32_t *cr = gpio_cr_reg(port, pin);
+  uint8_t shift = gpio_cr_shift(pin);
+
+  *cr = (*cr & ~(0xFU << shift)) | ((uint32_t)0b0100U << shift);
+
+  port->BRR = (1U << pin);
+}
+
+void hal_gpio_pin_lock(GPIO_TypeDef *port, uint8_t pin) {
+
+  uint32_t lckk = (1U << 16);
+  uint32_t lck = lckk | (1U << pin);
+
+  port->LCKR = lck;
+  port->LCKR = (1U << pin);
+  port->LCKR = lck;
+  (void)port->LCKR;
+  (void)port->LCKR;
+}
+
+void hal_gpio_alternate_en(GPIO_TypeDef *port, uint8_t pin) {
+  (void)port;
+  (void)pin;
+  RCC->APB2ENR |= RCC_APB2ENR_AFIOEN;
 }

@@ -21,7 +21,7 @@ static const IRQn_Type exti_irq_vectors[16] = {
     EXTI9_5_IRQn,   EXTI9_5_IRQn,   EXTI15_10_IRQn, EXTI15_10_IRQn,
     EXTI15_10_IRQn, EXTI15_10_IRQn, EXTI15_10_IRQn, EXTI15_10_IRQn};
 
-static uint8_t exti_port_index(GPIO_TypeDef *port) {
+static uint8_t exti_port_index(const GPIO_TypeDef *port) {
   return (uint8_t)(((uint32_t)port - GPIOA_BASE) / 0x400U);
 }
 
@@ -32,7 +32,7 @@ static void exti_dispatch(uint8_t line) {
   }
 }
 
-void hal_exti_init(GPIO_TypeDef *port, uint8_t pin, EXTI_Edge_t edge) {
+void hal_exti_init(const GPIO_TypeDef *port, uint8_t pin, EXTI_Edge_t edge) {
   RCC->APB2ENR |= RCC_APB2ENR_AFIOEN;
 
   uint8_t reg_index = (uint8_t)(pin >> 2U);

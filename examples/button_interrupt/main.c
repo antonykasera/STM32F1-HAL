@@ -42,7 +42,7 @@ int main(void) {
   GPIO_Config led_cfg = {GPIO_MODE_OUTPUT_PP, GPIO_SPEED_2_MHZ, GPIO_PULL_NONE};
 
   // initialize the sysem clock and system ticker for the delay function
-  hal_sysclock_init();
+  hal_sysclock_init(&CLOCK_CONFIG_72MHZ_HSE);
   hal_systick_init();
 
   // enable clock on the button and led ports

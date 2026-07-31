@@ -17,7 +17,7 @@ typedef enum { FALLING_EDGE, RISING_EDGE } EXTI_Edge_t;
 
 typedef void (*exti_callback_t)(void);
 
-void hal_exti_init(GPIO_TypeDef *port, uint8_t pin, EXTI_Edge_t edge);
+void hal_exti_init(const GPIO_TypeDef *port, uint8_t pin, EXTI_Edge_t edge);
 
 void hal_exti_deinit(uint8_t line);
 
