@@ -72,16 +72,11 @@ void hal_timer_init_hz(TIM_TypeDef *tim, uint32_t freq_hz) {
     return;
   }
 
-  uint32_t ticks = hal_clock_get_timer_clk_hz(tim) / freq_hz;
-  uint32_t psc = 0U;
+  uint16_t psc = 0U;
+  uint16_t arr = 0U;
+  hal_timer_solve_psc_arr(hal_clock_get_timer_clk_hz(tim), freq_hz, &psc, &arr);
 
-  while ((ticks / (psc + 1U)) > 65536U) {
-    psc++;
-  }
-
-  uint32_t arr = (ticks / (psc + 1U)) - 1U;
-
-  hal_timer_init(tim, (uint16_t)psc, (uint16_t)arr);
+  hal_timer_init(tim, psc, arr);
 }
 
 void hal_timer_deinit(TIM_TypeDef *tim) {

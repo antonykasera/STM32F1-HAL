@@ -5,7 +5,7 @@
  * Copyright (c) 2026 Flex HAL Project.
  * SPDX-License-Identifier: MIT
  *
- * Strategy: the HAL takes a `GPIO_TypeDef *`, so we allocate the peripheral
+ * The HAL takes a `GPIO_TypeDef *`, so we allocate the peripheral
  * struct in ordinary host RAM, pass its address in, then inspect the register
  * fields directly. No target hardware, no fixed-address dereference.
  *
@@ -22,7 +22,7 @@ static uint8_t nibble_of(const GPIO_TypeDef *g, uint8_t pin) {
   return (uint8_t)((reg >> ((pin % 8) * 4)) & 0xF);
 }
 
-static void test_encode_output_modes(void) {
+void test_encode_output_modes(void) {
   ASSERT_EQ(gpio_encode_config(GPIO_MODE_OUTPUT_PP, GPIO_SPEED_10_MHZ,
                                GPIO_PULL_NONE),
             0b0001);
@@ -43,7 +43,7 @@ static void test_encode_output_modes(void) {
       0b1101);
 }
 
-static void test_encode_input_modes(void) {
+void test_encode_input_modes(void) {
   ASSERT_EQ(
       gpio_encode_config(GPIO_MODE_ANALOG, GPIO_SPEED_INPUT, GPIO_PULL_NONE),
       0b0000);
@@ -61,7 +61,7 @@ static void test_encode_input_modes(void) {
       0b0100);
 }
 
-static void test_cr_shift(void) {
+void test_cr_shift(void) {
   ASSERT_EQ(gpio_cr_shift(0), 0);
   ASSERT_EQ(gpio_cr_shift(7), 28);
   ASSERT_EQ(gpio_cr_shift(8), 0);
@@ -69,7 +69,7 @@ static void test_cr_shift(void) {
   ASSERT_EQ(gpio_cr_shift(15), 60 - 32);
 }
 
-static void test_pin_init_pc13(void) {
+void test_pin_init_pc13(void) {
   GPIO_TypeDef g = {0};
   GPIO_Config cfg = {GPIO_MODE_OUTPUT_PP, GPIO_SPEED_2_MHZ, GPIO_PULL_NONE};
 
@@ -79,7 +79,7 @@ static void test_pin_init_pc13(void) {
   ASSERT_EQ(g.CRL, 0);
 }
 
-static void test_pin_init_crl_isolation(void) {
+void test_pin_init_crl_isolation(void) {
   GPIO_TypeDef g = {0};
   GPIO_Config cfg = {GPIO_MODE_OUTPUT_PP, GPIO_SPEED_50_MHZ, GPIO_PULL_NONE};
 
@@ -91,7 +91,7 @@ static void test_pin_init_crl_isolation(void) {
   ASSERT_EQ(g.CRL & ~(0xFu << 20), 0);
 }
 
-static void test_pin_init_pull_direction(void) {
+void test_pin_init_pull_direction(void) {
   GPIO_TypeDef up = {0}, down = {0};
   GPIO_Config cfg_up = {GPIO_MODE_INPUT_PULL, GPIO_SPEED_INPUT, GPIO_PULL_UP};
   GPIO_Config cfg_dn = {GPIO_MODE_INPUT_PULL, GPIO_SPEED_INPUT, GPIO_PULL_DOWN};
@@ -104,7 +104,7 @@ static void test_pin_init_pull_direction(void) {
   ASSERT_EQ(down.BRR, (1u << 4));
 }
 
-static void test_write_and_toggle(void) {
+void test_write_and_toggle(void) {
   GPIO_TypeDef g = {0};
 
   hal_gpio_pin_write(&g, 13, true);
@@ -123,15 +123,4 @@ static void test_write_and_toggle(void) {
   g.BSRR = 0;
   hal_gpio_pin_toggle(&g, 9);
   ASSERT_EQ(g.BSRR, (1u << 9));
-}
-
-int main(void) {
-  TEST_RUN(test_encode_output_modes);
-  TEST_RUN(test_encode_input_modes);
-  TEST_RUN(test_cr_shift);
-  TEST_RUN(test_pin_init_pc13);
-  TEST_RUN(test_pin_init_crl_isolation);
-  TEST_RUN(test_pin_init_pull_direction);
-  TEST_RUN(test_write_and_toggle);
-  return TEST_SUMMARY();
 }

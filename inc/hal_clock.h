@@ -45,6 +45,9 @@ typedef struct {
 
 extern const Clock_Config CLOCK_CONFIG_72MHZ_HSE;
 
+uint32_t hal_clock_flash_latency_for(uint32_t sysclk_hz);
+uint32_t hal_clock_sysclk_for(const Clock_Config *cfg);
+
 void hal_sysclock_init(const Clock_Config *cfg);
 void hal_sysclock_deinit(void);
 

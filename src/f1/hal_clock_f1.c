@@ -45,19 +45,23 @@ static const uint32_t apb2_cfgr_bits[] = {
 
 static const uint8_t apb_div_values[] = {1, 2, 4, 8, 16};
 
-static uint32_t flash_latency_for(uint32_t freq_hz) {
-  if (freq_hz <= 24000000U) {
+uint32_t hal_clock_flash_latency_for(uint32_t sysclk) {
+  if (sysclk <= 24000000U) {
     return FLASH_ACR_LATENCY_0;
   }
-  if (freq_hz <= 48000000U) {
+  if (sysclk <= 48000000U) {
     return FLASH_ACR_LATENCY_1;
   }
   return FLASH_ACR_LATENCY_2;
 }
 
-void hal_sysclock_init(const Clock_Config *cfg) {
+uint32_t hal_clock_sysclk_for(const Clock_Config *cfg) {
   uint32_t src_hz = (cfg->source == CLOCK_SOURCE_HSE) ? HSE_HZ : HSI_HZ;
-  sysclk_hz = src_hz * cfg->pll_mul;
+  return src_hz * cfg->pll_mul;
+}
+
+void hal_sysclock_init(const Clock_Config *cfg) {
+  sysclk_hz = hal_clock_sysclk_for(cfg);
   hclk_hz = sysclk_hz / ahb_div_values[cfg->ahb_div];
   pclk1_hz = hclk_hz / apb_div_values[cfg->apb1_div];
   pclk2_hz = hclk_hz / apb_div_values[cfg->apb2_div];
@@ -74,7 +78,7 @@ void hal_sysclock_init(const Clock_Config *cfg) {
 
   FLASH->ACR |= FLASH_ACR_PRFTBE;
   FLASH->ACR &= ~FLASH_ACR_LATENCY;
-  FLASH->ACR |= flash_latency_for(sysclk_hz);
+  FLASH->ACR |= hal_clock_flash_latency_for(sysclk_hz);
 
   RCC->CFGR &= ~RCC_CFGR_HPRE;
   RCC->CFGR |= ahb_cfgr_bits[cfg->ahb_div];

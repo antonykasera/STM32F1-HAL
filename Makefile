@@ -17,7 +17,7 @@ INCLUDES = -Iinc -Icmsis/inc
 CFLAGS  = $(MCU_FLAGS) $(DEFS) $(INCLUDES) \
           -Wall -Wextra -Wshadow \
           -Wconversion -Wsign-conversion -Wdouble-promotion \
-          -O1 -g3 -std=c11 \
+          -O0 -g3 -std=c11 \
           -ffunction-sections -fdata-sections
 
 ASFLAGS = $(MCU_FLAGS)
@@ -86,7 +86,9 @@ HOST_BUILD  = build/host
 HOST_CFLAGS = -DHAL_TEST_HOST -Iinc -Icmsis/inc -Wall -Wextra -g -std=c11 -fsanitize=address
 
 TEST_SRCS = $(wildcard test/host/*.c) \
-            $(wildcard src/$(FAMILY)/*.c) \
+            src/f1/hal_gpio_f1.c \
+            src/f1/hal_clock_f1.c \
+            src/f1/hal_timer_calc.c \
             $(wildcard src/common/*.c)
 
 host-test:

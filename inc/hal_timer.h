@@ -15,6 +15,9 @@
 
 typedef void (*timer_callback_t)(void);
 
+void hal_timer_solve_psc_arr(uint32_t timer_clk_hz, uint32_t freq_hz,
+                             uint16_t *psc, uint16_t *arr);
+
 void hal_timer_init(TIM_TypeDef *tim, uint16_t psc, uint16_t arr);
 
 void hal_timer_init_hz(TIM_TypeDef *tim, uint32_t freq_hz);
