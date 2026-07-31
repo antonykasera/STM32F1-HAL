@@ -1,4 +1,4 @@
-# flex — Custom HAL for STM32
+# flex Hardware Abstraction Layer for STM32
 
 A minimal, zero-cost-abstraction Hardware Abstraction Layer for STM32 microcontrollers.
 
@@ -16,13 +16,16 @@ flex/
 │   ├── hal_types.h         # Shared enums/structs
 │   ├── hal_gpio.h          # GPIO API
 │   ├── hal_exti.h          # EXTI / interrupt API
+│   ├── hal_timer.h         # Timer (TIM2/3/4) API
 │   ├── hal_clock.h         # Clock configuration API
 │   └── board.h             # Project pin definitions
 ├── src/
 │   ├── f1/                 # STM32F1 family implementations
 │   │   ├── hal_gpio_f1.c
 │   │   ├── hal_exti_f1.c
-│   │   └── hal_clock_f1.c
+│   │   ├── hal_clock_f1.c
+│   │   ├── hal_timer_f1.c
+│   │   └── hal_timer_calc.c
 │   └── common/             # Family-independent code
 │       └── hal_error.c
 ├── cmsis/                  # Vendor CMSIS headers & startup
@@ -30,7 +33,8 @@ flex/
 │   └── startup/
 ├── examples/
 │   ├── blink/
-│   └── button_interrupt/
+│   ├── button_interrupt/
+│   └── basic_timer/
 ├── test/
 │   └── host/               # Host-side unit tests
 ├── Makefile
