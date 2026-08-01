@@ -42,6 +42,12 @@ void test_solver_needs_prescale(void);
 void test_solver_1khz_from_36mhz(void);
 void test_solver_guards_bad_input(void);
 
+/* --- uart (test_uart.c) --- */
+void test_brr_72mhz_115200(void);
+void test_brr_72mhz_9600(void);
+void test_brr_36mhz_115200(void);
+void test_brr_zero_baud_guarded(void);
+
 int main(void) {
   TEST_RUN(test_encode_output_modes);
   TEST_RUN(test_encode_input_modes);
@@ -60,6 +66,11 @@ int main(void) {
   TEST_RUN(test_solver_needs_prescale);
   TEST_RUN(test_solver_1khz_from_36mhz);
   TEST_RUN(test_solver_guards_bad_input);
+
+  TEST_RUN(test_brr_72mhz_115200);
+  TEST_RUN(test_brr_72mhz_9600);
+  TEST_RUN(test_brr_36mhz_115200);
+  TEST_RUN(test_brr_zero_baud_guarded);
 
   return TEST_SUMMARY();
 }
