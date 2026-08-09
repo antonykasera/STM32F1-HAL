@@ -6,6 +6,7 @@
  * SPDX-License-Identifier: MIT
  */
 
+#include "hal_error.h"
 #include "hal_exti.h"
 #include "stm32f103xb.h"
 #include <stddef.h>
@@ -26,6 +27,7 @@ static uint8_t exti_port_index(const GPIO_TypeDef *port) {
 }
 
 static void exti_dispatch(uint8_t line) {
+  HAL_ASSERT(line < 16U);
   EXTI->PR = (1U << line);
   if (exti_callbacks[line] != NULL) {
     exti_callbacks[line]();
@@ -33,11 +35,16 @@ static void exti_dispatch(uint8_t line) {
 }
 
 void hal_exti_init(const GPIO_TypeDef *port, uint8_t pin, EXTI_Edge_t edge) {
+
+  uint8_t index = exti_port_index(port);
+
+  HAL_ASSERT(index < 7U);
+  HAL_ASSERT(pin < 16U);
+
   RCC->APB2ENR |= RCC_APB2ENR_AFIOEN;
 
   uint8_t reg_index = (uint8_t)(pin >> 2U);
   uint8_t bit_shift = (uint8_t)((pin & 0x03U) << 2U);
-  uint8_t index = exti_port_index(port);
 
   AFIO->EXTICR[reg_index] &= ~(0xFU << bit_shift);
   AFIO->EXTICR[reg_index] |= ((uint32_t)index << bit_shift);
@@ -58,6 +65,8 @@ void hal_exti_init(const GPIO_TypeDef *port, uint8_t pin, EXTI_Edge_t edge) {
 
 void hal_exti_deinit(uint8_t line) {
 
+  HAL_ASSERT(line < 16U);
+
   EXTI->PR = (1U << line);
   exti_callbacks[line] = NULL;
   EXTI->RTSR &= ~(1U << line);
@@ -67,22 +76,29 @@ void hal_exti_deinit(uint8_t line) {
 }
 
 void hal_exti_register_callback(uint8_t line, exti_callback_t cb) {
-  if (line < 16U) {
-    exti_callbacks[line] = cb;
-  }
+  HAL_ASSERT(line < 16U);
+  exti_callbacks[line] = cb;
 }
 
 void hal_exti_set_priority(uint8_t line, uint8_t priority) {
-  if (line < 16U) {
-    __NVIC_SetPriority(exti_irq_vectors[line], priority);
-  }
+  HAL_ASSERT(line < 16U);
+  __NVIC_SetPriority(exti_irq_vectors[line], priority);
 }
 
-void hal_exti_soft_trigger(uint8_t line) { EXTI->SWIER |= (1U << line); }
+void hal_exti_soft_trigger(uint8_t line) {
+  HAL_ASSERT(line < 16U);
+  EXTI->SWIER |= (1U << line);
+}
 
-void hal_exti_enable(uint8_t line) { EXTI->IMR |= (1U << line); }
+void hal_exti_enable(uint8_t line) {
+  HAL_ASSERT(line < 16U);
+  EXTI->IMR |= (1U << line);
+}
 
-void hal_exti_disable(uint8_t line) { EXTI->IMR &= ~(1U << line); }
+void hal_exti_disable(uint8_t line) {
+  HAL_ASSERT(line < 16U);
+  EXTI->IMR &= ~(1U << line);
+}
 
 void EXTI0_IRQHandler(void) { exti_dispatch(0); }
 void EXTI1_IRQHandler(void) { exti_dispatch(1); }

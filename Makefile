@@ -19,7 +19,7 @@ INCLUDES = -Iinc -Icmsis/inc
 CFLAGS  = $(MCU_FLAGS) $(DEFS) $(INCLUDES) \
           -Wall -Wextra -Wshadow \
           -Wconversion -Wsign-conversion -Wdouble-promotion \
-          -Os -g3 -std=c11 \
+          -O0 -g3 -std=c11 \
           -ffunction-sections -fdata-sections
 
 ASFLAGS = $(MCU_FLAGS)
@@ -31,8 +31,8 @@ LDFLAGS = $(MCU_FLAGS) \
           -Wl,-Map=$(BUILD)/$(TARGET).map
 
 # link-time optimisation (release builds):
-CFLAGS  += -flto
-LDFLAGS += -flto
+# CFLAGS  += -flto
+# LDFLAGS += -flto
 
 HAL_SRCS  = $(wildcard src/$(FAMILY)/*.c)
 CMN_SRCS  = $(wildcard src/common/*.c)
@@ -72,6 +72,21 @@ $(BUILD):
 flash: $(BUILD)/$(TARGET).bin
 	st-flash write $(BUILD)/$(TARGET).bin 0x8000000
 
+OPENOCD_CFG = -f interface/stlink.cfg -f target/stm32f1x.cfg
+
+flash-ocd: $(BUILD)/$(TARGET).elf
+	openocd $(OPENOCD_CFG) -c "program $< verify reset exit"
+
+gdbserver:
+	openocd $(OPENOCD_CFG)
+
+gdb: $(BUILD)/$(TARGET).elf
+	@openocd $(OPENOCD_CFG) >/tmp/flex-openocd.log 2>&1 & \
+	OCD_PID=$$!; \
+	sleep 1; \
+	arm-none-eabi-gdb $(BUILD)/$(TARGET).elf -x .gdbinit; \
+	kill $$OCD_PID 2>/dev/null; true
+
 # Flash via USB DFU (STM32duino/Maple bootloader: alt-setting 2, VID:PID 1EAF:0003)
 dfu: $(BUILD)/$(TARGET).bin
 	sudo dfu-util -w -a 2 -d 1EAF:0003 -D $(BUILD)/$(TARGET).bin
@@ -96,6 +111,10 @@ stackusage:
 	@echo "--- stack frames (bytes, largest first) ---"
 	@find $(BUILD) -name '*.su' -exec cat {} + | sort -t$$'\t' -k2 -nr | head -25
 
+
+debug: clean
+	$(MAKE) CFLAGS="$(MCU_FLAGS) $(DEFS) $(INCLUDES) -Wall -Wextra -Wshadow -Wconversion -Wsign-conversion -Wdouble-promotion -Og -g3 -std=c11 -ffunction-sections -fdata-sections" LDFLAGS="$(MCU_FLAGS) -Tlinker.ld -Wl,--gc-sections --specs=nano.specs --specs=nosys.specs -Wl,-Map=$(BUILD)/$(TARGET).map" all
+
 # Requires 'bear'
 compdb: clean
 	bear -- $(MAKE) all
@@ -117,4 +136,4 @@ host-test:
 	./$(HOST_BUILD)/test_runner
 	@echo "--- Host tests passed ---"
 
-.PHONY: all size sections syms disasm stackusage flash dfu clean compdb host-test
+.PHONY: all size sections syms disasm stackusage flash flash-ocd gdbserver gdb dfu clean debug compdb host-test

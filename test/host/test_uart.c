@@ -5,10 +5,6 @@
  * Copyright (c) 2026 Flex HAL Project.
  * SPDX-License-Identifier: MIT
  *
- * Only hal_uart_calc_brr is exercised -- pure arithmetic (pclk + baud -> BRR),
- * no register access. The register driver (hal_uart_f1.c) touches USART/RCC and
- * is NOT host-callable.
- *
  * BRR = round(f_CK / (16 * baud)) laid out as mantissa[15:4] + frac[3:0], which
  * equals round(f_CK / baud). Check values computed from RM0008 USARTDIV.
  */

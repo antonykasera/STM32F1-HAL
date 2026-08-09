@@ -4,12 +4,7 @@
  *
  * Copyright (c) 2026 Flex HAL Project.
  * SPDX-License-Identifier: MIT
- *
- * Only the PURE helpers are exercised here -- the ones that compute
- * frequencies and derive flash wait-states from a Clock_Config. The register
- * functions (hal_sysclock_init) dereference RCC/FLASH at fixed addresses and
- * are NOT host-callable, so they are deliberately untested here.
- *
+
  * Flash-latency thresholds cross-checked against RM0008 Rev 21, Flash ACR
  * (LATENCY): 0WS <= 24 MHz, 1WS <= 48 MHz, 2WS <= 72 MHz.
  */

@@ -1,6 +1,6 @@
 # flex Hardware Abstraction Layer for STM32
 
-A minimal, zero-cost-abstraction Hardware Abstraction Layer for STM32 microcontrollers.
+A minimal Hardware Abstraction Layer for STM32 microcontrollers.
 
 ## Supported Hardware
 
@@ -14,9 +14,11 @@ A minimal, zero-cost-abstraction Hardware Abstraction Layer for STM32 microcontr
 flex/
 ├── inc/
 │   ├── hal_types.h
+│   ├── hal_error.h
 │   ├── hal_gpio.h
 │   ├── hal_exti.h
 │   ├── hal_timer.h
+│   ├── hal_pwm.h
 │   ├── hal_uart.h
 │   ├── hal_clock.h
 │   └── board.h
@@ -27,6 +29,7 @@ flex/
 │   │   ├── hal_clock_f1.c
 │   │   ├── hal_timer_f1.c
 │   │   ├── hal_timer_calc.c
+│   │   ├── hal_pwm_f1.c
 │   │   ├── hal_uart_f1.c
 │   │   └── hal_uart_calc.c
 │   └── common/
@@ -38,6 +41,7 @@ flex/
 │   ├── blink/
 │   ├── button_interrupt/
 │   ├── basic_timer/
+│   ├── pwm_led/
 │   └── uart_hello_world/
 ├── test/
 │   └── host/
@@ -46,7 +50,9 @@ flex/
 │       ├── test_gpio.c
 │       ├── test_clock.c
 │       ├── test_timer.c
-│       └── test_uart.c
+│       ├── test_pwm.c
+│       ├── test_uart.c
+│       └── test_error.c
 ├── Makefile
 ├── linker.ld
 ├── LICENSE
@@ -70,6 +76,16 @@ make dfu
 
 # Clean
 make clean
+```
+
+## Debugging
+
+```bash
+# Build with debug symbols (-Og, no LTO)
+make debug
+
+# Start an on-chip GDB session over SWD (openocd + arm-none-eabi-gdb)
+make gdb
 ```
 
 ## Host-Side Testing

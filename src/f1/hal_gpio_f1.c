@@ -6,6 +6,7 @@
  * SPDX-License-Identifier: MIT
  */
 
+#include "hal_error.h"
 #include "hal_gpio.h"
 #include "stm32f103xb.h"
 #include <stdbool.h>
@@ -45,6 +46,7 @@ uint8_t gpio_encode_config(GPIO_Mode mode, GPIO_Speed speed, GPIO_Pull pull) {
 
 void hal_gpio_pin_init(GPIO_TypeDef *port, uint8_t pin,
                        const GPIO_Config *cfg) {
+  HAL_ASSERT(pin < 16U);
   volatile uint32_t *cr = gpio_cr_reg(port, pin);
   uint8_t shift = gpio_cr_shift(pin);
   uint8_t nibble = gpio_encode_config(cfg->mode, cfg->speed, cfg->pull);
@@ -60,6 +62,8 @@ void hal_gpio_pin_init(GPIO_TypeDef *port, uint8_t pin,
 }
 
 void hal_gpio_pin_deinit(GPIO_TypeDef *port, uint8_t pin) {
+  HAL_ASSERT(pin < 16U);
+
   volatile uint32_t *cr = gpio_cr_reg(port, pin);
   uint8_t shift = gpio_cr_shift(pin);
 
@@ -69,6 +73,7 @@ void hal_gpio_pin_deinit(GPIO_TypeDef *port, uint8_t pin) {
 }
 
 void hal_gpio_pin_lock(GPIO_TypeDef *port, uint8_t pin) {
+  HAL_ASSERT(pin < 16U);
 
   uint32_t lckk = (1U << 16);
   uint32_t lck = lckk | (1U << pin);
@@ -81,7 +86,9 @@ void hal_gpio_pin_lock(GPIO_TypeDef *port, uint8_t pin) {
 }
 
 void hal_gpio_alternate_en(GPIO_TypeDef *port, uint8_t pin) {
-  (void)port;
+  HAL_ASSERT(pin < 16U);
+  /* cast pin regardless of HAL_DISABLE_ASSERT */
   (void)pin;
+  (void)port;
   RCC->APB2ENR |= RCC_APB2ENR_AFIOEN;
 }

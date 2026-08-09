@@ -46,10 +46,10 @@ static void timer_dispatch(TIM_TypeDef *tim) {
   }
 }
 
-void hal_timer_init(TIM_TypeDef *tim, uint16_t psc, uint16_t arr) {
+int hal_timer_base_config(TIM_TypeDef *tim, uint16_t psc, uint16_t arr) {
   int idx = timer_index(tim);
   if (idx < 0) {
-    return;
+    return -1;
   }
 
   RCC->APB1ENR |= timer_rcc_masks[idx];
@@ -60,6 +60,15 @@ void hal_timer_init(TIM_TypeDef *tim, uint16_t psc, uint16_t arr) {
   tim->CR1 |= TIM_CR1_URS;
   tim->EGR = TIM_EGR_UG;
   tim->SR &= ~TIM_SR_UIF;
+
+  return idx;
+}
+
+void hal_timer_init(TIM_TypeDef *tim, uint16_t psc, uint16_t arr) {
+  int idx = hal_timer_base_config(tim, psc, arr);
+  if (idx < 0) {
+    return;
+  }
 
   tim->DIER |= TIM_DIER_UIE;
 

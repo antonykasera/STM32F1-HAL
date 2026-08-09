@@ -48,6 +48,19 @@ void test_brr_72mhz_9600(void);
 void test_brr_36mhz_115200(void);
 void test_brr_zero_baud_guarded(void);
 
+/* --- pwm (test_pwm.c) --- */
+void test_pwm_duty_zero(void);
+void test_pwm_duty_full(void);
+void test_pwm_duty_half(void);
+void test_pwm_duty_quarter(void);
+void test_pwm_duty_clamps_over_1000(void);
+void test_pwm_duty_rounds_down(void);
+
+/* --- error (test_error.c) --- */
+void test_status_str_known(void);
+void test_status_str_unknown(void);
+void test_assert_true_is_noop(void);
+
 int main(void) {
   TEST_RUN(test_encode_output_modes);
   TEST_RUN(test_encode_input_modes);
@@ -71,6 +84,17 @@ int main(void) {
   TEST_RUN(test_brr_72mhz_9600);
   TEST_RUN(test_brr_36mhz_115200);
   TEST_RUN(test_brr_zero_baud_guarded);
+
+  TEST_RUN(test_pwm_duty_zero);
+  TEST_RUN(test_pwm_duty_full);
+  TEST_RUN(test_pwm_duty_half);
+  TEST_RUN(test_pwm_duty_quarter);
+  TEST_RUN(test_pwm_duty_clamps_over_1000);
+  TEST_RUN(test_pwm_duty_rounds_down);
+
+  TEST_RUN(test_status_str_known);
+  TEST_RUN(test_status_str_unknown);
+  TEST_RUN(test_assert_true_is_noop);
 
   return TEST_SUMMARY();
 }

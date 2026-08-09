@@ -7,11 +7,14 @@
  */
 
 #include "hal_clock.h"
+#include "hal_error.h"
 #include "hal_uart.h"
 #include "stm32f103xb.h"
 #include <stdint.h>
 
 void hal_uart_init(USART_TypeDef *uart, const UART_Config *cfg) {
+  HAL_ASSERT(uart == USART1 || uart == USART2 || uart == USART3);
+
   uint32_t pclk;
   if (uart == USART1) {
     RCC->APB2ENR |= RCC_APB2ENR_USART1EN;
@@ -69,6 +72,8 @@ void hal_uart_write_string(USART_TypeDef *uart, const char *s) {
 }
 
 void hal_uart_deinit(USART_TypeDef *uart) {
+  HAL_ASSERT(uart == USART1 || uart == USART2 || uart == USART3);
+
   uart->CR1 &= ~USART_CR1_UE;
   if (uart == USART1) {
     RCC->APB2ENR &= ~RCC_APB2ENR_USART1EN;
