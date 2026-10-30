@@ -3,7 +3,7 @@
  * @brief Shared error status codes + assertion hook
  *
  * Copyright (c) 2026 Flex HAL Project.
- * All rights reserved.
+ * SPDX-License-Identifier: MIT
  *
  * HAL_ASSERT(cond) routes a failed check to hal_error_handler(), which is a
  * weak symbol the application may override (e.g to blink an LED, log over
@@ -15,7 +15,6 @@
 #ifndef HAL_ERROR_H
 #define HAL_ERROR_H
 
-#include "hal_types.h"
 
 typedef enum {
   HAL_OK = 0,

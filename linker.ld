@@ -1,6 +1,8 @@
+/* STM32F103C8: the "8" means 64K of flash per the datasheet. Many of these chips
+ * have 128K fitted, but only 64K is guaranteed, so this is what the link checks. */
 MEMORY
 {
-  FLASH (rx)  : ORIGIN = 0x08000000, LENGTH = 128K
+  FLASH (rx)  : ORIGIN = 0x08000000, LENGTH = 64K
   RAM   (rwx) : ORIGIN = 0x20000000, LENGTH = 20K
 }
 

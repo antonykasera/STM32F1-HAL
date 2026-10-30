@@ -2,7 +2,7 @@
  * @file hal_uart_calc.c
  * @brief UART baud-rate arithmetic
  *
- * Copyright (c) 2026. All rights reserved.
+ * Copyright (c) 2026.
  *
  * SPDX-License-Identifier: MIT
  *

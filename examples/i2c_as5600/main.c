@@ -8,7 +8,7 @@
  * Wiring: AS5600 SCL -> PB6, SDA -> PB7, VCC -> 3.3V, GND -> GND (pull-ups
  * are 4.7k to 3.3V).Serial out on USART1 (PA9 TX), 115200 8N1.
  *
- * Copyright (c) 2026. All rights reserved.
+ * Copyright (c) 2026.
  * SPDX-License-Identifier: MIT
  */
 

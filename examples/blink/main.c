@@ -2,11 +2,10 @@
  * @file main.c
  * @brief Blink example using the HAL
  *
- * Copyright (c) 2026. All rights reserved.
+ * Copyright (c) 2026.
  * SPDX-License-Identifier: MIT
  */
 
-#include "board.h"
 #include "hal_clock.h"
 #include "hal_gpio.h"
 #include "stm32f103xb.h"

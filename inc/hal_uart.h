@@ -3,13 +3,12 @@
  * @brief UART API header file
  *
  * Copyright (c) 2026 Flex HAL Project.
- * All rights reserved.
+ * SPDX-License-Identifier: MIT
  */
 
 #ifndef HAL_UART_H
 #define HAL_UART_H
 
-#include "hal_types.h"
 #include "stm32f103xb.h"
 #include <stdint.h>
 

@@ -13,7 +13,6 @@ A minimal Hardware Abstraction Layer for STM32 microcontrollers.
 ```
 flex/
 ├── inc/
-│   ├── hal_types.h
 │   ├── hal_error.h
 │   ├── hal_gpio.h
 │   ├── hal_exti.h
@@ -21,8 +20,7 @@ flex/
 │   ├── hal_pwm.h
 │   ├── hal_uart.h
 │   ├── hal_i2c.h
-│   ├── hal_clock.h
-│   └── board.h
+│   └── hal_clock.h
 ├── src/
 │   ├── f1/
 │   │   ├── hal_gpio_f1.c
@@ -31,6 +29,7 @@ flex/
 │   │   ├── hal_timer_f1.c
 │   │   ├── hal_timer_calc.c
 │   │   ├── hal_pwm_f1.c
+│   │   ├── hal_pwm_calc.c
 │   │   ├── hal_uart_f1.c
 │   │   ├── hal_uart_calc.c
 │   │   ├── hal_i2c_f1.c
@@ -46,7 +45,10 @@ flex/
 │   ├── basic_timer/
 │   ├── pwm_led/
 │   ├── uart_hello_world/
-│   └── i2c_scan/
+│   ├── cycle_profile/
+│   ├── i2c_scan/
+│   ├── i2c_as5600/
+│   └── i2c_as5600_it/
 ├── test/
 │   └── host/
 │       ├── test_assert.h
@@ -72,14 +74,17 @@ flex/
 # Build the blink example for F1 family (default)
 make
 
-# Build a specific example
+# Build a specific example (output goes to build/<example>/)
 make EXAMPLE=button_interrupt
 
-# Flash via ST-Link
-make flash
+# Flash via ST-Link. EXAMPLE selects the image, and defaults to blink.
+make flash EXAMPLE=button_interrupt
 
 # Flash via USB DFU (STM32duino/Maple bootloader)
 make dfu
+
+# Build every example from clean, with warnings as errors
+make examples
 
 # Clean
 make clean
@@ -89,10 +94,10 @@ make clean
 
 ```bash
 # Build with debug symbols (-Og, no LTO)
-make debug
+make debug EXAMPLE=button_interrupt
 
 # Start an on-chip GDB session over SWD (openocd + arm-none-eabi-gdb)
-make gdb
+make gdb EXAMPLE=button_interrupt
 ```
 
 ## Using flex in Your Project
@@ -102,11 +107,12 @@ and source lists. Your project includes `main()`, the linker script and
 `SystemInit()`.
 
 ```bash
-git submodule add https://github.com/<you>/flex.git lib/flex
+git submodule add https://github.com/antonykasera/STM32F1-HAL.git lib/flex
 ```
 
 ```makefile
 FLEX_DIR := lib/flex
+FLEX_MODULES := gpio clock uart  # optional, defaults to every module
 include $(FLEX_DIR)/flex.mk
 
 CFLAGS += $(FLEX_CFLAGS)     # MCU flags, -DSTM32F103xB, flex + CMSIS includes

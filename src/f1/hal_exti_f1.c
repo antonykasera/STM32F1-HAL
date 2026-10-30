@@ -2,7 +2,7 @@
  * @file hal_exti_f1.c
  * @brief STM32F1 EXTI implementation
  *
- * Copyright (c) 2026. All rights reserved.
+ * Copyright (c) 2026.
  * SPDX-License-Identifier: MIT
  */
 

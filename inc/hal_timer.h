@@ -3,13 +3,12 @@
  * @brief TIMER Configurations
  *
  * Copyright (c) 2026 Flex HAL Project.
- * All rights reserved.
+ * SPDX-License-Identifier: MIT
  */
 
 #ifndef HAL_TIMER_H
 #define HAL_TIMER_H
 
-#include "hal_types.h"
 #include "stm32f103xb.h"
 #include <stdint.h>
 

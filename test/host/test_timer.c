@@ -49,7 +49,7 @@ void test_solver_1khz_needs_prescale(void) {
 
 void test_solver_needs_prescale(void) {
   /* 1 Hz -> 72,000,000 ticks. Too big for ARR alone (>65536), so PSC grows.
-   * ticks/(psc+1) must be <= 65536; smallest psc is 1099 -> 72e6/1100 = 65454.
+   * ticks/(psc+1) must be <= 65536; smallest psc is 1098 -> 72e6/1099 = 65514.
    */
   uint16_t psc = 0, arr = 0;
   hal_timer_solve_psc_arr(TCLK, 1U, &psc, &arr);

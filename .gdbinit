@@ -2,7 +2,8 @@
 # Used by `make gdb` (which starts openocd, then launches gdb with this file).
 # Terminal debugging: breakpoints, stepping, register/peripheral inspection.
 #
-# Run `make debug` first so build/firmware.elf has full -Og symbols.
+# Run `make debug EXAMPLE=<name>` first so build/<name>/firmware.elf has full -Og
+# symbols, then `make gdb EXAMPLE=<name>` with the same name.
 
 set print pretty on
 set pagination off

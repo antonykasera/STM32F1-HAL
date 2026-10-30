@@ -3,14 +3,13 @@
  * @brief I2C master API header file
  *
  * Copyright (c) 2026 Flex HAL Project.
- * All rights reserved.
+ * SPDX-License-Identifier: MIT
  */
 
 #ifndef HAL_I2C_H
 #define HAL_I2C_H
 
 #include "hal_error.h"
-#include "hal_types.h"
 #include "stm32f103xb.h"
 #include <stdbool.h>
 #include <stdint.h>

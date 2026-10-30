@@ -3,13 +3,12 @@
  * @brief Public clock configuration API
  *
  * Copyright (c) 2026 Flex HAL Project.
- * All rights reserved.
+ * SPDX-License-Identifier: MIT
  */
 
 #ifndef HAL_CLOCK_H
 #define HAL_CLOCK_H
 
-#include "hal_types.h"
 #include "stm32f103xb.h"
 #include <stdint.h>
 

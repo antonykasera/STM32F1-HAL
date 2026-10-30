@@ -2,7 +2,7 @@
  * @file hal_i2c_f1.c
  * @brief STM32F1 I2C master implementation (blocking, Sm + Fm)
  *
- * Copyright (c) 2026. All rights reserved.
+ * Copyright (c) 2026.
  * SPDX-License-Identifier: MIT
  *
  * Every blocking wait is bounded by the per-instance timeout, so an absent or

@@ -2,7 +2,7 @@
  * @file hal_pwm_f1.c
  * @brief STM32F1 PWM implementation (TIM2/3/4, edge-aligned PWM mode 1)
  *
- * Copyright (c) 2026. All rights reserved.
+ * Copyright (c) 2026.
  * SPDX-License-Identifier: MIT
  */
 

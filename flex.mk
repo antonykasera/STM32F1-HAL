@@ -4,6 +4,7 @@
 # own Makefile:
 #
 #     FLEX_DIR := lib/flex
+#     FLEX_MODULES := gpio clock uart  # optional, defaults to every module
 #     include $(FLEX_DIR)/flex.mk
 #
 #     CFLAGS  += $(FLEX_CFLAGS)      # MCU flags + -DSTM32F103xB + flex/CMSIS includes
@@ -32,7 +33,17 @@ FLEX_DEFS      := -DSTM32F103xB
 FLEX_CFLAGS := $(FLEX_MCU_FLAGS) $(FLEX_DEFS) $(FLEX_INC)
 
 # --- library sources  ---
-FLEX_SRCS := $(wildcard $(FLEX_ROOT)/src/$(FLEX_FAMILY)/*.c) \
+# A module's interrupt handlers replace the weak ones in the startup vector
+# table, so --gc-sections can never drop them. List only the modules you use to
+# keep the others out of the image entirely.
+#
+# Dependencies are not resolved for you; a missing one is a link error:
+#   timer, uart -> clock
+#   pwm         -> timer, clock
+#   i2c         -> gpio, clock
+FLEX_MODULES ?= gpio clock exti timer pwm uart i2c can
+
+FLEX_SRCS := $(wildcard $(foreach m,$(FLEX_MODULES),$(FLEX_ROOT)/src/$(FLEX_FAMILY)/hal_$(m)_*.c)) \
              $(wildcard $(FLEX_ROOT)/src/common/*.c)
 
 # --- CMSIS startup (optional, consumers may supply their own) ---

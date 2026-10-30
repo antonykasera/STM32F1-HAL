@@ -2,7 +2,7 @@
  * @file main.c
  * @brief Blink example using the HAL TIMER module
  *
- * Copyright (c) 2026. All rights reserved.
+ * Copyright (c) 2026.
  * SPDX-License-Identifier: MIT
  */
 

@@ -2,7 +2,7 @@
  * @file main.c
  * @brief Button interrupt example using the HAL
  *
- * Copyright (c) 2026. All rights reserved.
+ * Copyright (c) 2026.
  * SPDX-License-Identifier: MIT
  *
  * RC low pass filter or some form of debouncing is expected.
@@ -11,7 +11,6 @@
  * C=100nF
  */
 
-#include "board.h"
 #include "hal_clock.h"
 #include "hal_exti.h"
 #include "hal_gpio.h"

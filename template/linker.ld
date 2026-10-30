@@ -1,10 +1,13 @@
-/* linker.ld 
- * Default: STM32F103C8T6, full 128K flash at 0x08000000 (bare-metal, ST-Link).
+/* linker.ld
+ * Default: STM32F103C8T6 at 0x08000000 (bare-metal, ST-Link). The "8" means 64K
+ * of flash per the datasheet. Many of these chips have 128K fitted, but only 64K
+ * is guaranteed, so this is what the link checks. Use 128K on a CB part, or on a
+ * chip you have tested yourself.
  * If you flash via a bootloader, offset ORIGIN accordingly. */
 
 MEMORY
 {
-  FLASH (rx)  : ORIGIN = 0x08000000, LENGTH = 128K
+  FLASH (rx)  : ORIGIN = 0x08000000, LENGTH = 64K
   RAM   (rwx) : ORIGIN = 0x20000000, LENGTH = 20K
 }
 

@@ -2,7 +2,7 @@
  * @file main.c
  * @brief Cycle-counting profiler example.
  *
- * Copyright (c) 2026. All rights reserved.
+ * Copyright (c) 2026.
  * SPDX-License-Identifier: MIT
  *
  * Uses the Cortex-M3 DWT->CYCCNT free-running cycle counter to measure how many

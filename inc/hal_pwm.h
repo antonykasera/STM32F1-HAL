@@ -9,7 +9,7 @@
  * alternate-function push-pull. Advanced-timer features (TIM1 break/dead-time)
  * are out of scope.
  *
- * Copyright (c) 2026. All rights reserved.
+ * Copyright (c) 2026.
  * SPDX-License-Identifier: MIT
  */
 

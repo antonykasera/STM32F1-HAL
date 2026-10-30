@@ -10,7 +10,7 @@
  *
  * Wiring: SCL=PB6, SDA=PB7, pull-ups to 3.3V. UART TX on PA9.
  *
- * Copyright (c) 2026. All rights reserved.
+ * Copyright (c) 2026.
  * SPDX-License-Identifier: MIT
  */
 

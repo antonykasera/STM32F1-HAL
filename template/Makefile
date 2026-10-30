@@ -1,5 +1,5 @@
 # Minimal flex consumer Makefile.
-# git submodule add https://github.com/antonykasera/flex.git lib/flex
+# git submodule add https://github.com/antonykasera/STM32F1-HAL.git lib/flex
 
 TARGET  ?= firmware
 BUILD   ?= build
@@ -8,6 +8,9 @@ FLEX_DIR ?= lib/flex
 CC      = arm-none-eabi-gcc
 OBJCOPY = arm-none-eabi-objcopy
 SIZE    = arm-none-eabi-size
+
+# Only the flex modules this project uses. See flex.mk for the dependencies.
+FLEX_MODULES ?= gpio clock
 
 # Pull in flex's exported variables
 include $(FLEX_DIR)/flex.mk
@@ -36,8 +39,12 @@ VPATH := $(sort $(dir $(CSRCS)))
 
 all: $(BUILD)/$(TARGET).bin size
 
+# Rebuild objects when a header changes. Must stay below `all`, which has to
+# remain the default goal.
+-include $(OBJS:.o=.d)
+
 $(BUILD)/%.o: %.c | $(BUILD)
-	$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) -MMD -MP -c $< -o $@
 
 $(BUILD)/startup.o: $(FLEX_STARTUP) | $(BUILD)
 	$(CC) $(FLEX_MCU_FLAGS) -c $< -o $@

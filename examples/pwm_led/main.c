@@ -6,7 +6,7 @@
  * fraction (duty) ramps up and down. Wire an external LED (with a resistor) or
  * a scope to PA6 to see the effect.
  *
- * Copyright (c) 2026. All rights reserved.
+ * Copyright (c) 2026.
  * SPDX-License-Identifier: MIT
  */
 
@@ -20,7 +20,7 @@
 #define PWM_PIN 6U
 #define PWM_TIMER TIM3
 #define PWM_CHANNEL PWM_CH1
-#define PWM_FREQ_HZ 18000000U
+#define PWM_FREQ_HZ 1000U
 
 void SystemInit(void) {}
 
@@ -44,7 +44,7 @@ int main(void) {
    * Frequency stays 1 kHz throughout.
    */
   uint16_t duty = 0U;
-  int16_t step = 10U; /* 1.0% per tick */
+  int16_t step = 10; /* 1.0% per tick */
 
   while (1) {
     hal_pwm_set_duty_permille(PWM_TIMER, PWM_CHANNEL, duty);

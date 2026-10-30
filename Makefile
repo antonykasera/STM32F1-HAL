@@ -1,9 +1,13 @@
 TARGET  = firmware
-BUILD   = build
 
 FAMILY ?= f1
 
 EXAMPLE ?= blink
+
+# Each example builds into its own directory, so one example's image can never
+# be flashed by mistake for another's.
+BUILD_ROOT = build
+BUILD      = $(BUILD_ROOT)/$(EXAMPLE)
 
 CC      = arm-none-eabi-gcc
 AS      = arm-none-eabi-gcc
@@ -21,6 +25,12 @@ CFLAGS  = $(MCU_FLAGS) $(DEFS) $(INCLUDES) \
           -Wconversion -Wsign-conversion -Wdouble-promotion \
           -O0 -g3 -std=c11 \
           -ffunction-sections -fdata-sections
+
+# Kept out of CFLAGS because debug and stackusage replace CFLAGS on the command
+# line. -MMD writes a .d file listing each object's headers; -MP stops a deleted
+# header from breaking the build.
+DEPFLAGS = -MMD -MP
+EXTRA_CFLAGS ?=
 
 ASFLAGS = $(MCU_FLAGS)
 
@@ -47,9 +57,13 @@ OBJS += $(BUILD)/startup_stm32f103xb.o
 
 all: $(BUILD)/$(TARGET).elf $(BUILD)/$(TARGET).bin $(BUILD)/$(TARGET).hex size
 
+# Must stay below `all`: the .d files define targets, and the first target in
+# the Makefile becomes the default goal.
+-include $(OBJS:.o=.d)
+
 $(BUILD)/%.o: %.c
 	@mkdir -p $(dir $@)
-	$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) $(EXTRA_CFLAGS) $(DEPFLAGS) -c $< -o $@
 
 $(BUILD)/startup_stm32f103xb.o: $(ASM) | $(BUILD)
 	$(AS) $(ASFLAGS) -c $< -o $@
@@ -92,8 +106,17 @@ dfu: $(BUILD)/$(TARGET).bin
 	sudo dfu-util -w -a 2 -d 1EAF:0003 -D $(BUILD)/$(TARGET).bin
 
 clean:
-	rm -rf $(BUILD)
+	rm -rf $(BUILD_ROOT)
 
+# Build every example from clean with warnings as errors, so an object left over
+# from an earlier build can't hide a warning.
+EXAMPLES = $(notdir $(patsubst %/,%,$(wildcard examples/*/)))
+
+examples: clean
+	@set -e; for ex in $(EXAMPLES); do \
+		echo "--- $$ex ---"; \
+		$(MAKE) --no-print-directory EXAMPLE=$$ex EXTRA_CFLAGS=-Werror all; \
+	done
 
 sections: $(BUILD)/$(TARGET).elf
 	$(SIZE) -A -d $<
@@ -120,13 +143,14 @@ compdb: clean
 	bear -- $(MAKE) all
 
 HOST_CC     = gcc
-HOST_BUILD  = build/host
+HOST_BUILD  = $(BUILD_ROOT)/host
 HOST_CFLAGS = -DHAL_TEST_HOST -Iinc -Icmsis/inc -Wall -Wextra -g -std=c11 -fsanitize=address
 
 TEST_SRCS = $(wildcard test/host/*.c) \
             src/f1/hal_gpio_f1.c \
             src/f1/hal_clock_f1.c \
             src/f1/hal_timer_calc.c \
+            src/f1/hal_pwm_calc.c \
             src/f1/hal_uart_calc.c \
             src/f1/hal_i2c_calc.c \
             $(wildcard src/common/*.c)
@@ -137,4 +161,4 @@ host-test:
 	./$(HOST_BUILD)/test_runner
 	@echo "--- Host tests passed ---"
 
-.PHONY: all size sections syms disasm stackusage flash flash-ocd gdbserver gdb dfu clean debug compdb host-test
+.PHONY: all size sections syms disasm stackusage flash flash-ocd gdbserver gdb dfu clean examples debug compdb host-test

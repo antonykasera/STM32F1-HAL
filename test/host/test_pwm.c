@@ -10,10 +10,9 @@
  * above 1000 saturating there.
  */
 
+#include "hal_pwm.h"
 #include "test_assert.h"
 #include <stdint.h>
-
-uint16_t hal_pwm_calc_ccr(uint16_t permille, uint16_t arr);
 
 void test_pwm_duty_zero(void) {
   /* 0% -> CCR 0 (output never high). */
