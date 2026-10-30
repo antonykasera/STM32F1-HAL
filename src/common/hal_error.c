@@ -26,6 +26,10 @@ const char *hal_status_str(HAL_Status status) {
     return "HAL_ERR_UNSUPPORTED";
   case HAL_ERR_TIMEOUT:
     return "HAL_ERR_TIMEOUT";
+  case HAL_ERR_NACK:
+    return "HAL_ERR_NACK";
+  case HAL_ERR_BUS:
+    return "HAL_ERR_BUS";
   }
   return "HAL_ERR_UNKNOWN";
 }

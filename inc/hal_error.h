@@ -22,6 +22,8 @@ typedef enum {
   HAL_ERR_PARAM,
   HAL_ERR_UNSUPPORTED,
   HAL_ERR_TIMEOUT,
+  HAL_ERR_NACK,
+  HAL_ERR_BUS,
 } HAL_Status;
 
 const char *hal_status_str(HAL_Status status);

@@ -56,6 +56,12 @@ void test_pwm_duty_quarter(void);
 void test_pwm_duty_clamps_over_1000(void);
 void test_pwm_duty_rounds_down(void);
 
+/* --- i2c (test_i2c.c) --- */
+void test_i2c_ccr_standard(void);
+void test_i2c_ccr_fast(void);
+void test_i2c_trise_standard(void);
+void test_i2c_trise_fast(void);
+
 /* --- error (test_error.c) --- */
 void test_status_str_known(void);
 void test_status_str_unknown(void);
@@ -91,6 +97,11 @@ int main(void) {
   TEST_RUN(test_pwm_duty_quarter);
   TEST_RUN(test_pwm_duty_clamps_over_1000);
   TEST_RUN(test_pwm_duty_rounds_down);
+
+  TEST_RUN(test_i2c_ccr_standard);
+  TEST_RUN(test_i2c_ccr_fast);
+  TEST_RUN(test_i2c_trise_standard);
+  TEST_RUN(test_i2c_trise_fast);
 
   TEST_RUN(test_status_str_known);
   TEST_RUN(test_status_str_unknown);
