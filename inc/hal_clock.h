@@ -10,6 +10,7 @@
 #define HAL_CLOCK_H
 
 #include "stm32f103xb.h"
+#include <stdbool.h>
 #include <stdint.h>
 
 typedef enum { CLOCK_SOURCE_HSI, CLOCK_SOURCE_HSE } Clock_Source;
@@ -59,6 +60,13 @@ uint32_t hal_clock_get_timer_clk_hz(const TIM_TypeDef *tim);
 void hal_systick_init(void);
 uint32_t hal_get_tick(void);
 void hal_delay_ms(uint32_t delay_ms);
+
+/* True once at least timeout_ms has passed. Unsigned subtraction keeps this
+ * correct across tick wraparound. Needs hal_systick_init() to have run. */
+static inline bool hal_tick_expired(uint32_t now, uint32_t start,
+                                    uint32_t timeout_ms) {
+  return (now - start) > timeout_ms;
+}
 
 void hal_gpio_init_port_clock(GPIO_TypeDef *port);
 void hal_gpio_deinit_port_clock(GPIO_TypeDef *port);

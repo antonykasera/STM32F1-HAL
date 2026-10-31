@@ -51,3 +51,14 @@ void test_default_config_picks_2ws(void) {
   uint32_t sysclk = hal_clock_sysclk_for(&CLOCK_CONFIG_72MHZ_HSE);
   ASSERT_EQ(hal_clock_flash_latency_for(sysclk), FLASH_ACR_LATENCY_2);
 }
+
+void test_tick_expired(void) {
+  /* waits at least the full timeout */
+  ASSERT_TRUE(!hal_tick_expired(100U, 100U, 5U));
+  ASSERT_TRUE(!hal_tick_expired(105U, 100U, 5U));
+  ASSERT_TRUE(hal_tick_expired(106U, 100U, 5U));
+
+  /* still correct when the 32-bit tick wraps past zero */
+  ASSERT_TRUE(!hal_tick_expired(3U, 0xFFFFFFFEU, 5U));
+  ASSERT_TRUE(hal_tick_expired(4U, 0xFFFFFFFEU, 5U));
+}

@@ -5,8 +5,10 @@
  * Copyright (c) 2026.
  * SPDX-License-Identifier: MIT
  *
- * Every blocking wait is bounded by the per-instance timeout, so an absent or
- * stuck device returns an error instead of hanging.
+ * Every blocking wait is bounded by the per-instance timeout in ms, so an
+ * absent or stuck device returns an error instead of hanging. The timeout comes
+ * from the SysTick counter, so call hal_systick_init() before hal_i2c_init(),
+ * or these waits will never expire
  */
 
 #include "hal_clock.h"
@@ -74,7 +76,8 @@ static uint32_t i2c_timeout(const I2C_TypeDef *i2c) {
  * early on an acknowledge failure (AF), which the caller maps to HAL_ERR_NACK.
  */
 static HAL_Status i2c_wait_sr1(I2C_TypeDef *i2c, uint32_t flag) {
-  uint32_t budget = i2c_timeout(i2c);
+  uint32_t start = hal_get_tick();
+  uint32_t timeout_ms = i2c_timeout(i2c);
 
   while (!(i2c->SR1 & flag)) {
     if (i2c->SR1 & I2C_SR1_AF) {
@@ -82,7 +85,7 @@ static HAL_Status i2c_wait_sr1(I2C_TypeDef *i2c, uint32_t flag) {
       i2c->CR1 |= I2C_CR1_STOP;
       return HAL_ERR_NACK;
     }
-    if (budget-- == 0U) {
+    if (hal_tick_expired(hal_get_tick(), start, timeout_ms)) {
       return HAL_ERR_TIMEOUT;
     }
   }
@@ -96,7 +99,7 @@ HAL_Status hal_i2c_init(I2C_TypeDef *i2c, const I2C_Config *cfg) {
     return HAL_ERR_UNSUPPORTED;
   }
 
-  i2c_timeouts[idx] = cfg->timeout;
+  i2c_timeouts[idx] = cfg->timeout_ms;
   i2c_xfers[idx].state = I2C_STATE_READY;
 
   if (i2c == I2C1) {
@@ -107,7 +110,7 @@ HAL_Status hal_i2c_init(I2C_TypeDef *i2c, const I2C_Config *cfg) {
 
   /* software reset clears any stuck BUSY/state (also leaves NOSTRETCH clear, so
    * clock stretching stays enabled: a slave holding SCL low just delays a flag,
-   * which the timeout-bounded waits tolerate -- size cfg->timeout for the
+   * which the timeout-bounded waits tolerate -- size cfg->timeout_ms for the
    * slowest-stretching device on the bus). */
   i2c->CR1 |= I2C_CR1_SWRST;
   i2c->CR1 &= ~I2C_CR1_SWRST;
@@ -145,10 +148,11 @@ void hal_i2c_deinit(I2C_TypeDef *i2c) {
  * so a still-settling STOP from a previous transfer (or another master) can't
  * corrupt this one. Bounded by the instance timeout. */
 static HAL_Status i2c_wait_not_busy(I2C_TypeDef *i2c) {
-  uint32_t budget = i2c_timeout(i2c);
+  uint32_t start = hal_get_tick();
+  uint32_t timeout_ms = i2c_timeout(i2c);
 
   while (i2c->SR2 & I2C_SR2_BUSY) {
-    if (budget-- == 0U) {
+    if (hal_tick_expired(hal_get_tick(), start, timeout_ms)) {
       return HAL_ERR_BUS;
     }
   }

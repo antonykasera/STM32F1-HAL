@@ -34,6 +34,7 @@ void test_write_and_toggle(void);
 void test_flash_latency_boundaries(void);
 void test_sysclk_from_config(void);
 void test_default_config_picks_2ws(void);
+void test_tick_expired(void);
 
 /* --- timer (test_timer.c) --- */
 void test_solver_no_prescale(void);
@@ -79,6 +80,7 @@ int main(void) {
   TEST_RUN(test_flash_latency_boundaries);
   TEST_RUN(test_sysclk_from_config);
   TEST_RUN(test_default_config_picks_2ws);
+  TEST_RUN(test_tick_expired);
 
   TEST_RUN(test_solver_no_prescale);
   TEST_RUN(test_solver_1khz_needs_prescale);

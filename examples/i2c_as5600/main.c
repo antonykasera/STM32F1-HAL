@@ -69,7 +69,7 @@ int main(void) {
   hal_gpio_pin_init(I2C_PORT, I2C_SDA, &i2c_cfg);
   hal_gpio_alternate_en(I2C_PORT, I2C_SCL);
 
-  I2C_Config cfg = {I2C_SPEED_STANDARD, 100000U};
+  I2C_Config cfg = {I2C_SPEED_STANDARD, 10U};
   hal_i2c_init(I2C1, &cfg);
 
   /* a 1-byte read (exercises the N=1 path) */

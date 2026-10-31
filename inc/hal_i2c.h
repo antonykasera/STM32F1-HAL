@@ -18,7 +18,7 @@ typedef enum { I2C_SPEED_STANDARD, I2C_SPEED_FAST } I2C_Speed;
 
 typedef struct {
   I2C_Speed speed;
-  uint32_t timeout;
+  uint32_t timeout_ms;
 } I2C_Config;
 
 typedef enum {
