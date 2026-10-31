@@ -19,6 +19,11 @@ void test_status_str_known(void) {
   ASSERT_TRUE(
       streq(hal_status_str(HAL_ERR_UNSUPPORTED), "HAL_ERR_UNSUPPORTED"));
   ASSERT_TRUE(streq(hal_status_str(HAL_ERR_TIMEOUT), "HAL_ERR_TIMEOUT"));
+
+  ASSERT_TRUE(streq(hal_status_str(HAL_ERR_NACK), "HAL_ERR_NACK"));
+  ASSERT_TRUE(streq(hal_status_str(HAL_ERR_BUS), "HAL_ERR_BUS"));
+  ASSERT_TRUE(streq(hal_status_str(HAL_ERR_BUSY), "HAL_ERR_BUSY"));
+  ASSERT_TRUE(streq(hal_status_str(HAL_ERR_EMPTY), "HAL_ERR_EMPTY"));
 }
 
 void test_status_str_unknown(void) {

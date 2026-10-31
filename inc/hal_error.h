@@ -5,16 +5,20 @@
  * Copyright (c) 2026 Flex HAL Project.
  * SPDX-License-Identifier: MIT
  *
+ * Programmer mistakes like a bad pointer, an out of range argument go through
+ * HAL_ASSERT. Anything that can fail in correct code i.e a NACK, a timeout, a
+ * full mailbox returns a HAL_Status.
+ *
  * HAL_ASSERT(cond) routes a failed check to hal_error_handler(), which is a
  * weak symbol the application may override (e.g to blink an LED, log over
  * UART, or hit a breakpoint). The default handler halts on target and aborts on
  * host. Define HAL_DISABLE_ASSERT to compile the checks out for a release
  * build.
+ *
  */
 
 #ifndef HAL_ERROR_H
 #define HAL_ERROR_H
-
 
 typedef enum {
   HAL_OK = 0,
@@ -23,6 +27,8 @@ typedef enum {
   HAL_ERR_TIMEOUT,
   HAL_ERR_NACK,
   HAL_ERR_BUS,
+  HAL_ERR_BUSY,
+  HAL_ERR_EMPTY,
 } HAL_Status;
 
 const char *hal_status_str(HAL_Status status);

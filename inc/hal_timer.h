@@ -9,6 +9,7 @@
 #ifndef HAL_TIMER_H
 #define HAL_TIMER_H
 
+#include "hal_error.h"
 #include "stm32f103xb.h"
 #include <stdint.h>
 
@@ -17,7 +18,7 @@ typedef void (*timer_callback_t)(void);
 void hal_timer_solve_psc_arr(uint32_t timer_clk_hz, uint32_t freq_hz,
                              uint16_t *psc, uint16_t *arr);
 
-int hal_timer_base_config(TIM_TypeDef *tim, uint16_t psc, uint16_t arr);
+HAL_Status hal_timer_base_config(TIM_TypeDef *tim, uint16_t psc, uint16_t arr);
 
 void hal_timer_init(TIM_TypeDef *tim, uint16_t psc, uint16_t arr);
 

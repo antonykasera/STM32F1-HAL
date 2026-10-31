@@ -518,7 +518,7 @@ static HAL_Status i2c_begin_it(I2C_TypeDef *i2c) {
     return HAL_ERR_UNSUPPORTED;
   }
   if (i2c_xfers[idx].state == I2C_STATE_BUSY) {
-    return HAL_ERR_BUS;
+    return HAL_ERR_BUSY;
   }
 
   HAL_Status st = i2c_wait_not_busy(i2c);

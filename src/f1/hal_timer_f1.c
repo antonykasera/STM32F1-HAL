@@ -7,6 +7,7 @@
  */
 
 #include "hal_clock.h"
+#include "hal_error.h"
 #include "hal_timer.h"
 #include "stm32f103xb.h"
 #include <stddef.h>
@@ -46,10 +47,11 @@ static void timer_dispatch(TIM_TypeDef *tim) {
   }
 }
 
-int hal_timer_base_config(TIM_TypeDef *tim, uint16_t psc, uint16_t arr) {
+HAL_Status hal_timer_base_config(TIM_TypeDef *tim, uint16_t psc, uint16_t arr) {
   int idx = timer_index(tim);
+  HAL_ASSERT(idx >= 0);
   if (idx < 0) {
-    return -1;
+    return HAL_ERR_UNSUPPORTED;
   }
 
   RCC->APB1ENR |= timer_rcc_masks[idx];
@@ -61,19 +63,18 @@ int hal_timer_base_config(TIM_TypeDef *tim, uint16_t psc, uint16_t arr) {
   tim->EGR = TIM_EGR_UG;
   tim->SR &= ~TIM_SR_UIF;
 
-  return idx;
+  return HAL_OK;
 }
 
 void hal_timer_init(TIM_TypeDef *tim, uint16_t psc, uint16_t arr) {
-  int idx = hal_timer_base_config(tim, psc, arr);
-  if (idx < 0) {
+  if (hal_timer_base_config(tim, psc, arr) != HAL_OK) {
     return;
   }
 
   tim->DIER |= TIM_DIER_UIE;
 
   hal_timer_set_priority(tim, TIMER_DEFAULT_PRIORITY);
-  __NVIC_EnableIRQ(timer_irq_vectors[idx]);
+  __NVIC_EnableIRQ(timer_irq_vectors[timer_index(tim)]);
 }
 
 void hal_timer_init_hz(TIM_TypeDef *tim, uint32_t freq_hz) {

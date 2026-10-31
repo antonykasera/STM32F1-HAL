@@ -30,6 +30,10 @@ const char *hal_status_str(HAL_Status status) {
     return "HAL_ERR_NACK";
   case HAL_ERR_BUS:
     return "HAL_ERR_BUS";
+  case HAL_ERR_EMPTY:
+    return "HAL_ERR_EMPTY";
+  case HAL_ERR_BUSY:
+    return "HAL_ERR_BUSY";
   }
   return "HAL_ERR_UNKNOWN";
 }

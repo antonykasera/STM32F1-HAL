@@ -44,7 +44,7 @@ void hal_pwm_init(TIM_TypeDef *tim, PWM_Channel ch, uint32_t freq_hz) {
   uint16_t arr = 0U;
   hal_timer_solve_psc_arr(hal_clock_get_timer_clk_hz(tim), freq_hz, &psc, &arr);
 
-  if (hal_timer_base_config(tim, psc, arr) < 0) {
+  if (hal_timer_base_config(tim, psc, arr) != HAL_OK) {
     return; /* unknown timer */
   }
 
