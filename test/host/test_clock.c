@@ -35,9 +35,15 @@ void test_sysclk_from_config(void) {
                       CLOCK_APB_DIV1};
   ASSERT_EQ(hal_clock_sysclk_for(&c48), 48000000U);
 
-  Clock_Config c16_hsi = {CLOCK_SOURCE_HSI, 2, CLOCK_AHB_DIV1, CLOCK_APB_DIV1,
+  /* HSI reaches the PLL div by 2 (RCC_CFGR.PLLSRC = 0): 4 MHz * 2 = 8 MHz */
+  Clock_Config c8_hsi = {CLOCK_SOURCE_HSI, 2, CLOCK_AHB_DIV1, CLOCK_APB_DIV1,
+                         CLOCK_APB_DIV1};
+  ASSERT_EQ(hal_clock_sysclk_for(&c8_hsi), 8000000U);
+
+  /* highest clock available from HSI: 4 MHz * 16 = 64 MHz */
+  Clock_Config c64_hsi = {CLOCK_SOURCE_HSI, 16, CLOCK_AHB_DIV1, CLOCK_APB_DIV2,
                           CLOCK_APB_DIV1};
-  ASSERT_EQ(hal_clock_sysclk_for(&c16_hsi), 16000000U);
+  ASSERT_EQ(hal_clock_sysclk_for(&c64_hsi), 64000000U);
 }
 
 void test_default_config_picks_2ws(void) {

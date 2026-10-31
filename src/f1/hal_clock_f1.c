@@ -56,7 +56,7 @@ uint32_t hal_clock_flash_latency_for(uint32_t sysclk) {
 }
 
 uint32_t hal_clock_sysclk_for(const Clock_Config *cfg) {
-  uint32_t src_hz = (cfg->source == CLOCK_SOURCE_HSE) ? HSE_HZ : HSI_HZ;
+  uint32_t src_hz = (cfg->source == CLOCK_SOURCE_HSE) ? HSE_HZ : HSI_HZ / 2U;
   return src_hz * cfg->pll_mul;
 }
 
@@ -143,9 +143,10 @@ uint32_t hal_clock_get_timer_clk_hz(const TIM_TypeDef *tim) {
 }
 
 void hal_systick_init(void) {
-  SysTick->LOAD = (hal_clock_get_sysclk_hz() / 1000U) - 1U;
+  SysTick->LOAD = (hal_clock_get_hclk_hz() / 1000U) - 1U;
   SysTick->VAL = 0x00;
-  SysTick->CTRL = (1 << 2) | (1 << 1) | (1 << 0);
+  SysTick->CTRL = SysTick_CTRL_CLKSOURCE_Msk | SysTick_CTRL_TICKINT_Msk |
+                  SysTick_CTRL_ENABLE_Msk;
 }
 
 void SysTick_Handler(void) { ms_ticks++; }
