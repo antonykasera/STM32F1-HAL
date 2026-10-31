@@ -31,7 +31,7 @@ int main(void) {
 
   /* PA6 as alternate-function push-pull so the timer drives the pin. */
   hal_gpio_init_port_clock(PWM_PORT);
-  hal_gpio_alternate_en(PWM_PORT, PWM_PIN);
+  hal_afio_enable();
 
   GPIO_Config pwm_cfg = {GPIO_MODE_AF_PP, GPIO_SPEED_50_MHZ, GPIO_PULL_NONE};
   hal_gpio_pin_init(PWM_PORT, PWM_PIN, &pwm_cfg);

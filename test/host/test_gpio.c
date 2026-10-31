@@ -124,3 +124,31 @@ void test_write_and_toggle(void) {
   hal_gpio_pin_toggle(&g, 9);
   ASSERT_EQ(g.BSRR, (1u << 9));
 }
+
+void test_afio_sets_field(void) {
+  /* PB8/PB9 is CAN_REMAP = 10, which is bit 14 of MAPR */
+  ASSERT_EQ(
+      hal_afio_mapr_next(0U, AFIO_MAPR_CAN_REMAP, AFIO_MAPR_CAN_REMAP_REMAP2),
+      0x4000U);
+  /* the old field value is replaced, not ORed: 11 -> 10 */
+  ASSERT_EQ(hal_afio_mapr_next(AFIO_MAPR_CAN_REMAP_REMAP3, AFIO_MAPR_CAN_REMAP,
+                               AFIO_MAPR_CAN_REMAP_REMAP2),
+            0x4000U);
+  /* and it can go back to the default pins: 10 -> 00 */
+  ASSERT_EQ(hal_afio_mapr_next(0x4000U, AFIO_MAPR_CAN_REMAP,
+                               AFIO_MAPR_CAN_REMAP_REMAP1),
+            0U);
+}
+
+void test_afio_keeps_other_remaps(void) {
+  ASSERT_EQ(hal_afio_mapr_next(AFIO_MAPR_I2C1_REMAP, AFIO_MAPR_CAN_REMAP,
+                               AFIO_MAPR_CAN_REMAP_REMAP2),
+            AFIO_MAPR_I2C1_REMAP | 0x4000U);
+}
+
+void test_afio_never_writes_back_swj(void) {
+  /* SWJ_CFG reads as undefined, so simulate every bit coming back set */
+  ASSERT_EQ(hal_afio_mapr_next(AFIO_MAPR_SWJ_CFG, AFIO_MAPR_CAN_REMAP,
+                               AFIO_MAPR_CAN_REMAP_REMAP2),
+            0x4000U);
+}

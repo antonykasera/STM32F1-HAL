@@ -56,7 +56,10 @@ void hal_gpio_pin_init(GPIO_TypeDef *port, uint8_t pin, const GPIO_Config *cfg);
 void hal_gpio_pin_deinit(GPIO_TypeDef *port, uint8_t pin);
 
 void hal_gpio_pin_lock(GPIO_TypeDef *port, uint8_t pin);
-void hal_gpio_alternate_en(GPIO_TypeDef *port, uint8_t pin);
+uint32_t hal_afio_mapr_next(uint32_t mapr, uint32_t field_mask,
+                            uint32_t field_value);
+void hal_afio_enable(void);
+void hal_afio_remap(uint32_t field_mask, uint32_t field_value);
 
 static inline void hal_gpio_port_write(GPIO_TypeDef *port, uint16_t mask) {
   port->ODR = mask;

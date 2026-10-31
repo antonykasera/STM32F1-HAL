@@ -29,6 +29,9 @@ void test_pin_init_pc13(void);
 void test_pin_init_crl_isolation(void);
 void test_pin_init_pull_direction(void);
 void test_write_and_toggle(void);
+void test_afio_sets_field(void);
+void test_afio_keeps_other_remaps(void);
+void test_afio_never_writes_back_swj(void);
 
 /* --- clock (test_clock.c) --- */
 void test_flash_latency_boundaries(void);
@@ -76,6 +79,9 @@ int main(void) {
   TEST_RUN(test_pin_init_crl_isolation);
   TEST_RUN(test_pin_init_pull_direction);
   TEST_RUN(test_write_and_toggle);
+  TEST_RUN(test_afio_sets_field);
+  TEST_RUN(test_afio_keeps_other_remaps);
+  TEST_RUN(test_afio_never_writes_back_swj);
 
   TEST_RUN(test_flash_latency_boundaries);
   TEST_RUN(test_sysclk_from_config);

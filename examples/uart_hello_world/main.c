@@ -36,8 +36,8 @@ int main(void) {
   hal_gpio_pin_init(PORT, UART_RX, &rx_cfg);
   hal_gpio_pin_init(PORT, UART_TX, &tx_cfg);
 
-  /* enable alternate function IO clock on the TX pin */
-  hal_gpio_alternate_en(PORT, UART_TX);
+  /* enable alternate function */
+  hal_afio_enable();
 
   /* initialize USART1 with the config */
   hal_uart_init(USART1, &uart_cfg);

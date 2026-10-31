@@ -85,10 +85,20 @@ void hal_gpio_pin_lock(GPIO_TypeDef *port, uint8_t pin) {
   (void)port->LCKR;
 }
 
-void hal_gpio_alternate_en(GPIO_TypeDef *port, uint8_t pin) {
-  HAL_ASSERT(pin < 16U);
-  /* cast pin regardless of HAL_DISABLE_ASSERT */
-  (void)pin;
-  (void)port;
-  RCC->APB2ENR |= RCC_APB2ENR_AFIOEN;
+/* New MAPR value with one remap field changed. SWJ_CFG is write-only and reads
+ * as undefined, so writing it back could disable SWD (RM0008 AFIO_MAPR). It is
+ * always cleared here instead, which writes 000: the reset state, SWD on. */
+uint32_t hal_afio_mapr_next(uint32_t mapr, uint32_t field_mask,
+                            uint32_t field_value) {
+  return (mapr & ~(field_mask | AFIO_MAPR_SWJ_CFG)) | field_value;
+}
+
+void hal_afio_enable(void) { RCC->APB2ENR |= RCC_APB2ENR_AFIOEN; }
+
+void hal_afio_remap(uint32_t field_mask, uint32_t field_value) {
+  HAL_ASSERT((field_mask & AFIO_MAPR_SWJ_CFG) == 0U);
+  HAL_ASSERT((field_value & ~field_mask) == 0U);
+
+  hal_afio_enable();
+  AFIO->MAPR = hal_afio_mapr_next(AFIO->MAPR, field_mask, field_value);
 }
