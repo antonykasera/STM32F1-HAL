@@ -153,6 +153,7 @@ TEST_SRCS = $(wildcard test/host/*.c) \
             src/f1/hal_pwm_calc.c \
             src/f1/hal_pwm_f1.c \
             src/f1/hal_uart_calc.c \
+            src/f1/hal_uart_f1.c \
             src/f1/hal_i2c_calc.c \
             $(wildcard src/common/*.c)
 

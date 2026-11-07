@@ -45,6 +45,7 @@ flex/
 │   ├── basic_timer/
 │   ├── pwm_led/
 │   ├── uart_hello_world/
+│   ├── uart_echo/
 │   ├── cycle_profile/
 │   ├── i2c_scan/
 │   ├── i2c_as5600/

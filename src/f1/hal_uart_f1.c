@@ -58,6 +58,19 @@ uint8_t hal_uart_read_byte(USART_TypeDef *uart) {
   return (uint8_t)uart->DR; /* reading DR returns the byte and clears RXNE */
 }
 
+HAL_Status hal_uart_try_read_byte(USART_TypeDef *uart, uint8_t *byte) {
+  if (!(uart->SR & USART_SR_RXNE)) {
+    return HAL_ERR_EMPTY;
+  }
+  *byte = (uint8_t)uart->DR;
+  return HAL_OK;
+}
+
+void hal_uart_flush(USART_TypeDef *uart) {
+  while (!(uart->SR & USART_SR_TC)) {
+  }
+}
+
 void hal_uart_write(USART_TypeDef *uart, const uint8_t *buf, uint32_t len) {
   for (uint32_t i = 0U; i < len; i++) {
     hal_uart_write_byte(uart, buf[i]);
@@ -74,6 +87,11 @@ void hal_uart_write_string(USART_TypeDef *uart, const char *s) {
 void hal_uart_deinit(USART_TypeDef *uart) {
   HAL_ASSERT(uart == USART1 || uart == USART2 || uart == USART3);
 
+  /* RM0008: wait for TC before disabling, or the last byte is cut off.
+   * Skipped if never enabled: TC would then never set. */
+  if (uart->CR1 & USART_CR1_UE) {
+    hal_uart_flush(uart);
+  }
   uart->CR1 &= ~USART_CR1_UE;
   if (uart == USART1) {
     RCC->APB2ENR &= ~RCC_APB2ENR_USART1EN;

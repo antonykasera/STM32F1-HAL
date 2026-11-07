@@ -53,6 +53,9 @@ void test_brr_72mhz_115200(void);
 void test_brr_72mhz_9600(void);
 void test_brr_36mhz_115200(void);
 void test_brr_zero_baud_guarded(void);
+void test_try_read_empty(void);
+void test_try_read_byte(void);
+void test_try_read_drops_parity_bit(void);
 
 /* --- pwm (test_pwm.c) --- */
 void test_pwm_duty_zero(void);
@@ -107,6 +110,9 @@ int main(void) {
   TEST_RUN(test_brr_72mhz_9600);
   TEST_RUN(test_brr_36mhz_115200);
   TEST_RUN(test_brr_zero_baud_guarded);
+  TEST_RUN(test_try_read_empty);
+  TEST_RUN(test_try_read_byte);
+  TEST_RUN(test_try_read_drops_parity_bit);
 
   TEST_RUN(test_pwm_duty_zero);
   TEST_RUN(test_pwm_duty_full);

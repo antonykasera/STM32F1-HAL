@@ -30,3 +30,34 @@ void test_brr_36mhz_115200(void) {
 void test_brr_zero_baud_guarded(void) {
   ASSERT_EQ(hal_uart_calc_brr(72000000U, 0U), 0U);
 }
+
+/* register-level tests on a USART_TypeDef in host RAM */
+
+void test_try_read_empty(void) {
+  USART_TypeDef u = {0};
+  uint8_t b = 0xAAU;
+
+  ASSERT_EQ(hal_uart_try_read_byte(&u, &b), HAL_ERR_EMPTY);
+  ASSERT_EQ(b, 0xAAU); /* untouched */
+}
+
+void test_try_read_byte(void) {
+  USART_TypeDef u = {0};
+  uint8_t b = 0U;
+  u.SR = USART_SR_RXNE;
+  u.DR = 0x41U;
+
+  ASSERT_EQ(hal_uart_try_read_byte(&u, &b), HAL_OK);
+  ASSERT_EQ(b, 0x41U);
+}
+
+void test_try_read_drops_parity_bit(void) {
+  /* with parity the frame is 9 bits: bit 8 is parity, data is bits 7:0 */
+  USART_TypeDef u = {0};
+  uint8_t b = 0U;
+  u.SR = USART_SR_RXNE;
+  u.DR = 0x1C1U;
+
+  ASSERT_EQ(hal_uart_try_read_byte(&u, &b), HAL_OK);
+  ASSERT_EQ(b, 0xC1U);
+}

@@ -9,6 +9,7 @@
 #ifndef HAL_UART_H
 #define HAL_UART_H
 
+#include "hal_error.h"
 #include "stm32f103xb.h"
 #include <stdint.h>
 
@@ -33,6 +34,12 @@ void hal_uart_deinit(USART_TypeDef *uart);
 void hal_uart_write_byte(USART_TypeDef *uart, uint8_t byte);
 
 uint8_t hal_uart_read_byte(USART_TypeDef *uart);
+
+/* non-blocking: HAL_OK with the byte, or HAL_ERR_EMPTY if none has arrived */
+HAL_Status hal_uart_try_read_byte(USART_TypeDef *uart, uint8_t *byte);
+
+/* wait until the last byte has left the pin, not just been queued */
+void hal_uart_flush(USART_TypeDef *uart);
 
 void hal_uart_write(USART_TypeDef *uart, const uint8_t *buf, uint32_t len);
 
