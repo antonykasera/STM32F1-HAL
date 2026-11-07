@@ -62,6 +62,10 @@ void test_pwm_duty_quarter(void);
 void test_pwm_duty_clamps_over_1000(void);
 void test_pwm_duty_rounds_down(void);
 void test_pwm_duty_full_at_max_arr(void);
+void test_pwm_channel_init_ch2(void);
+void test_pwm_channel_init_ch4_uses_ccmr2(void);
+void test_pwm_channel_init_running_no_ug(void);
+void test_pwm_stop_forces_low_start_restores(void);
 
 /* --- i2c (test_i2c.c) --- */
 void test_i2c_ccr_standard(void);
@@ -111,6 +115,10 @@ int main(void) {
   TEST_RUN(test_pwm_duty_clamps_over_1000);
   TEST_RUN(test_pwm_duty_rounds_down);
   TEST_RUN(test_pwm_duty_full_at_max_arr);
+  TEST_RUN(test_pwm_channel_init_ch2);
+  TEST_RUN(test_pwm_channel_init_ch4_uses_ccmr2);
+  TEST_RUN(test_pwm_channel_init_running_no_ug);
+  TEST_RUN(test_pwm_stop_forces_low_start_restores);
 
   TEST_RUN(test_i2c_ccr_standard);
   TEST_RUN(test_i2c_ccr_fast);

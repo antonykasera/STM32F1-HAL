@@ -38,9 +38,7 @@ static void pwm_config_ccmr(TIM_TypeDef *tim, PWM_Channel ch) {
   }
 }
 
-void hal_pwm_init(TIM_TypeDef *tim, PWM_Channel ch, uint32_t freq_hz) {
-  HAL_ASSERT(ch <= PWM_CH4);
-
+void hal_pwm_init(TIM_TypeDef *tim, uint32_t freq_hz) {
   uint16_t psc = 0U;
   uint16_t arr = 0U;
   HAL_Status st = hal_timer_solve_psc_arr(hal_clock_get_timer_clk_hz(tim),
@@ -55,12 +53,20 @@ void hal_pwm_init(TIM_TypeDef *tim, PWM_Channel ch, uint32_t freq_hz) {
   }
 
   tim->CR1 |= TIM_CR1_ARPE;
+}
 
+void hal_pwm_channel_init(TIM_TypeDef *tim, PWM_Channel ch) {
+  HAL_ASSERT(ch <= PWM_CH4);
+
+  *pwm_ccr(tim, ch) = 0U; /* start at 0% duty */
   pwm_config_ccmr(tim, ch);
-
   tim->CCER |= (uint32_t)(TIM_CCER_CC1E << ((uint32_t)ch * 4U));
 
-  tim->EGR = TIM_EGR_UG;
+  /* CCR is preloaded; load it now only if stopped, UG would reset a running
+   * counter (URS keeps UG from raising an update interrupt) */
+  if ((tim->CR1 & TIM_CR1_CEN) == 0U) {
+    tim->EGR = TIM_EGR_UG;
+  }
 }
 
 void hal_pwm_set_duty_permille(TIM_TypeDef *tim, PWM_Channel ch,

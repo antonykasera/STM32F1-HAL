@@ -24,7 +24,9 @@ typedef enum { PWM_CH1 = 0, PWM_CH2, PWM_CH3, PWM_CH4 } PWM_Channel;
 
 uint16_t hal_pwm_calc_ccr(uint16_t permille, uint16_t arr);
 
-void hal_pwm_init(TIM_TypeDef *tim, PWM_Channel ch, uint32_t freq_hz);
+/* frequency is per timer, shared by its channels: init once, then each channel */
+void hal_pwm_init(TIM_TypeDef *tim, uint32_t freq_hz);
+void hal_pwm_channel_init(TIM_TypeDef *tim, PWM_Channel ch);
 
 void hal_pwm_set_duty_permille(TIM_TypeDef *tim, PWM_Channel ch,
                                uint16_t permille);

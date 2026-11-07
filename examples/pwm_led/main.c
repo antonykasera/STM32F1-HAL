@@ -36,7 +36,8 @@ int main(void) {
   GPIO_Config pwm_cfg = {GPIO_MODE_AF_PP, GPIO_SPEED_50_MHZ, GPIO_PULL_NONE};
   hal_gpio_pin_init(PWM_PORT, PWM_PIN, &pwm_cfg);
 
-  hal_pwm_init(PWM_TIMER, PWM_CHANNEL, PWM_FREQ_HZ);
+  hal_pwm_init(PWM_TIMER, PWM_FREQ_HZ);
+  hal_pwm_channel_init(PWM_TIMER, PWM_CHANNEL);
   hal_pwm_set_duty_permille(PWM_TIMER, PWM_CHANNEL, 250U); /* start at 25% */
   hal_pwm_start(PWM_TIMER);
 
