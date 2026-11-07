@@ -15,6 +15,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#define PWM_OCM_MASK (0x7U << 4)
+#define PWM_OCM_FORCE_INACTIVE (0x4U << 4)
 #define PWM_OCM_PWM1 (0x6U << 4)
 #define PWM_OCPE (0x1U << 3)
 #define PWM_CH_BYTE_MASK 0xFFU
@@ -72,9 +74,35 @@ void hal_pwm_set_duty_raw(TIM_TypeDef *tim, PWM_Channel ch, uint16_t ccr) {
   *pwm_ccr(tim, ch) = ccr;
 }
 
-void hal_pwm_start(TIM_TypeDef *tim) { tim->CR1 |= TIM_CR1_CEN; }
+static void pwm_set_ocm(TIM_TypeDef *tim, PWM_Channel ch, uint32_t ocm) {
+  uint8_t shift = (uint8_t)(((uint32_t)ch & 1U) * 8U);
+  volatile uint32_t *ccmr = (ch <= PWM_CH2) ? &tim->CCMR1 : &tim->CCMR2;
 
-void hal_pwm_stop(TIM_TypeDef *tim) { tim->CR1 &= ~TIM_CR1_CEN; }
+  *ccmr = (*ccmr & ~((uint32_t)PWM_OCM_MASK << shift)) | (ocm << shift);
+}
+
+static bool pwm_channel_is_enabled(const TIM_TypeDef *tim, PWM_Channel ch) {
+  return (tim->CCER & (TIM_CCER_CC1E << ((uint32_t)ch * 4U))) != 0U;
+}
+
+static void pwm_set_ocm_enabled(TIM_TypeDef *tim, uint32_t ocm) {
+  for (uint32_t i = 0U; i < 4U; i++) {
+    if (pwm_channel_is_enabled(tim, (PWM_Channel)i)) {
+      pwm_set_ocm(tim, (PWM_Channel)i, ocm);
+    }
+  }
+}
+
+void hal_pwm_start(TIM_TypeDef *tim) {
+  pwm_set_ocm_enabled(tim, PWM_OCM_PWM1);
+  tim->CR1 |= TIM_CR1_CEN;
+}
+
+/* force outputs low first: clearing CEN alone freezes them, maybe mid-pulse */
+void hal_pwm_stop(TIM_TypeDef *tim) {
+  pwm_set_ocm_enabled(tim, PWM_OCM_FORCE_INACTIVE);
+  tim->CR1 &= ~TIM_CR1_CEN;
+}
 
 void hal_pwm_channel_enable(TIM_TypeDef *tim, PWM_Channel ch, bool en) {
   HAL_ASSERT(ch <= PWM_CH4);

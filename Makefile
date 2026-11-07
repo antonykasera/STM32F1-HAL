@@ -26,9 +26,7 @@ CFLAGS  = $(MCU_FLAGS) $(DEFS) $(INCLUDES) \
           -O0 -g3 -std=c11 \
           -ffunction-sections -fdata-sections
 
-# Kept out of CFLAGS because debug and stackusage replace CFLAGS on the command
-# line. -MMD writes a .d file listing each object's headers; -MP stops a deleted
-# header from breaking the build.
+# header deps; separate from CFLAGS, which debug/stackusage override
 DEPFLAGS = -MMD -MP
 EXTRA_CFLAGS ?=
 

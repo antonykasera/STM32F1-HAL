@@ -81,7 +81,7 @@ static HAL_Status i2c_wait_sr1(I2C_TypeDef *i2c, uint32_t flag) {
 
   while (!(i2c->SR1 & flag)) {
     if (i2c->SR1 & I2C_SR1_AF) {
-      i2c->SR1 &= ~I2C_SR1_AF;
+      i2c->SR1 = ~I2C_SR1_AF; /* rc_w0, see timer_dispatch */
       i2c->CR1 |= I2C_CR1_STOP;
       return HAL_ERR_NACK;
     }
@@ -740,21 +740,11 @@ static void i2c_er_isr(I2C_TypeDef *i2c) {
     return;
   }
   uint32_t sr1 = i2c->SR1;
-  HAL_Status st = HAL_ERR_BUS;
+  HAL_Status st = (sr1 & I2C_SR1_AF) ? HAL_ERR_NACK : HAL_ERR_BUS;
 
-  if (sr1 & I2C_SR1_AF) {
-    st = HAL_ERR_NACK;
-    i2c->SR1 &= ~I2C_SR1_AF;
-  }
-  if (sr1 & I2C_SR1_BERR) {
-    i2c->SR1 &= ~I2C_SR1_BERR;
-  }
-  if (sr1 & I2C_SR1_ARLO) {
-    i2c->SR1 &= ~I2C_SR1_ARLO;
-  }
-  if (sr1 & I2C_SR1_OVR) {
-    i2c->SR1 &= ~I2C_SR1_OVR;
-  }
+  /* rc_w0: clear exactly the flags read above in one write */
+  i2c->SR1 =
+      ~(sr1 & (I2C_SR1_AF | I2C_SR1_BERR | I2C_SR1_ARLO | I2C_SR1_OVR));
 
   i2c->CR1 |= I2C_CR1_STOP;
   i2c_finish(i2c, x, st);

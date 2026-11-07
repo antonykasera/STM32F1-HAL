@@ -40,7 +40,8 @@ static int timer_index(TIM_TypeDef *tim) {
 static void timer_dispatch(TIM_TypeDef *tim) {
   int idx = timer_index(tim);
 
-  tim->SR &= ~TIM_SR_UIF;
+  /* rc_w0: write 0 directly; a read-modify-write can clear flags set mid-way */
+  tim->SR = ~TIM_SR_UIF;
 
   if ((idx >= 0) && (timer_callbacks[idx] != NULL)) {
     timer_callbacks[idx]();
@@ -61,7 +62,7 @@ HAL_Status hal_timer_base_config(TIM_TypeDef *tim, uint16_t psc, uint16_t arr) {
 
   tim->CR1 |= TIM_CR1_URS;
   tim->EGR = TIM_EGR_UG;
-  tim->SR &= ~TIM_SR_UIF;
+  tim->SR = ~TIM_SR_UIF;
 
   return HAL_OK;
 }
@@ -98,7 +99,7 @@ void hal_timer_deinit(TIM_TypeDef *tim) {
 
   tim->CR1 &= ~TIM_CR1_CEN;
   tim->DIER &= ~TIM_DIER_UIE;
-  tim->SR &= ~TIM_SR_UIF;
+  tim->SR = ~TIM_SR_UIF;
 
   __NVIC_DisableIRQ(timer_irq_vectors[idx]);
 

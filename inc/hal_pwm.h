@@ -31,6 +31,7 @@ void hal_pwm_set_duty_permille(TIM_TypeDef *tim, PWM_Channel ch,
 
 void hal_pwm_set_duty_raw(TIM_TypeDef *tim, PWM_Channel ch, uint16_t ccr);
 
+/* stop drives all enabled outputs low before halting; start resumes PWM */
 void hal_pwm_start(TIM_TypeDef *tim);
 void hal_pwm_stop(TIM_TypeDef *tim);
 
