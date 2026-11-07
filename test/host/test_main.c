@@ -45,6 +45,8 @@ void test_solver_1khz_needs_prescale(void);
 void test_solver_needs_prescale(void);
 void test_solver_1khz_from_36mhz(void);
 void test_solver_guards_bad_input(void);
+void test_solver_rejects_unreachable_freq(void);
+void test_solver_psc_edges(void);
 
 /* --- uart (test_uart.c) --- */
 void test_brr_72mhz_115200(void);
@@ -94,6 +96,8 @@ int main(void) {
   TEST_RUN(test_solver_needs_prescale);
   TEST_RUN(test_solver_1khz_from_36mhz);
   TEST_RUN(test_solver_guards_bad_input);
+  TEST_RUN(test_solver_rejects_unreachable_freq);
+  TEST_RUN(test_solver_psc_edges);
 
   TEST_RUN(test_brr_72mhz_115200);
   TEST_RUN(test_brr_72mhz_9600);

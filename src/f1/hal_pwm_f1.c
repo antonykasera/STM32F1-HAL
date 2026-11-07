@@ -38,11 +38,15 @@ static void pwm_config_ccmr(TIM_TypeDef *tim, PWM_Channel ch) {
 
 void hal_pwm_init(TIM_TypeDef *tim, PWM_Channel ch, uint32_t freq_hz) {
   HAL_ASSERT(ch <= PWM_CH4);
-  HAL_ASSERT(freq_hz != 0U);
 
   uint16_t psc = 0U;
   uint16_t arr = 0U;
-  hal_timer_solve_psc_arr(hal_clock_get_timer_clk_hz(tim), freq_hz, &psc, &arr);
+  HAL_Status st = hal_timer_solve_psc_arr(hal_clock_get_timer_clk_hz(tim),
+                                          freq_hz, &psc, &arr);
+  HAL_ASSERT(st == HAL_OK);
+  if (st != HAL_OK) {
+    return;
+  }
 
   if (hal_timer_base_config(tim, psc, arr) != HAL_OK) {
     return; /* unknown timer */

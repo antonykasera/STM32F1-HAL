@@ -73,11 +73,52 @@ void test_solver_1khz_from_36mhz(void) {
 void test_solver_guards_bad_input(void) {
   uint16_t psc = 0x1234, arr = 0x5678;
 
-  /* freq 0 must be ignored -- outputs untouched. */
-  hal_timer_solve_psc_arr(TCLK, 0U, &psc, &arr);
+  /* freq 0 must be rejected -- outputs untouched. */
+  ASSERT_EQ(hal_timer_solve_psc_arr(TCLK, 0U, &psc, &arr), HAL_ERR_PARAM);
   ASSERT_EQ(psc, 0x1234U);
   ASSERT_EQ(arr, 0x5678U);
 
-  /* NULL pointers must not crash. */
-  hal_timer_solve_psc_arr(TCLK, 1000U, NULL, NULL);
+  /* NULL pointers must be rejected, not crash. */
+  ASSERT_EQ(hal_timer_solve_psc_arr(TCLK, 1000U, NULL, NULL), HAL_ERR_PARAM);
+}
+
+/* ticks = timer_clk / freq. Below 2 there is no valid ARR: ticks = 1 gives
+ * ARR = 0, which blocks the counter (RM0008), and ticks = 0 would wrap ARR. */
+void test_solver_rejects_unreachable_freq(void) {
+  uint16_t psc = 0x1234, arr = 0x5678;
+
+  ASSERT_EQ(hal_timer_solve_psc_arr(TCLK, TCLK + 1U, &psc, &arr), HAL_ERR_PARAM);
+  ASSERT_EQ(hal_timer_solve_psc_arr(TCLK, TCLK, &psc, &arr), HAL_ERR_PARAM);
+  ASSERT_EQ(psc, 0x1234U); /* outputs untouched on error */
+  ASSERT_EQ(arr, 0x5678U);
+
+  /* the fastest valid rate: 2 ticks per period */
+  ASSERT_EQ(hal_timer_solve_psc_arr(TCLK, TCLK / 2U, &psc, &arr), HAL_OK);
+  ASSERT_EQ(psc, 0U);
+  ASSERT_EQ(arr, 1U);
+}
+
+/* Edges of the PSC choice, with timer_clk = ticks and freq = 1. */
+void test_solver_psc_edges(void) {
+  uint16_t psc, arr;
+
+  /* 65536 ticks still fits ARR alone */
+  hal_timer_solve_psc_arr(65536U, 1U, &psc, &arr);
+  ASSERT_EQ(psc, 0U);
+  ASSERT_EQ(arr, 65535U);
+
+  /* one more tick needs the prescaler */
+  hal_timer_solve_psc_arr(65537U, 1U, &psc, &arr);
+  ASSERT_EQ(psc, 1U);
+  ASSERT_EQ(arr, 32767U);
+
+  /* 131073 / 2 = 65536 (floor), so PSC = 1 still fits */
+  hal_timer_solve_psc_arr(131073U, 1U, &psc, &arr);
+  ASSERT_EQ(psc, 1U);
+  ASSERT_EQ(arr, 65535U);
+
+  /* largest possible input: PSC tops out at 65535, it never overflows */
+  hal_timer_solve_psc_arr(0xFFFFFFFFU, 1U, &psc, &arr);
+  ASSERT_EQ(psc, 65535U);
+  ASSERT_EQ(arr, 65534U);
 }

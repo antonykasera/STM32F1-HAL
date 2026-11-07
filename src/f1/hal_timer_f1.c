@@ -78,13 +78,14 @@ void hal_timer_init(TIM_TypeDef *tim, uint16_t psc, uint16_t arr) {
 }
 
 void hal_timer_init_hz(TIM_TypeDef *tim, uint32_t freq_hz) {
-  if (freq_hz == 0U) {
-    return;
-  }
-
   uint16_t psc = 0U;
   uint16_t arr = 0U;
-  hal_timer_solve_psc_arr(hal_clock_get_timer_clk_hz(tim), freq_hz, &psc, &arr);
+  HAL_Status st = hal_timer_solve_psc_arr(hal_clock_get_timer_clk_hz(tim),
+                                          freq_hz, &psc, &arr);
+  HAL_ASSERT(st == HAL_OK);
+  if (st != HAL_OK) {
+    return;
+  }
 
   hal_timer_init(tim, psc, arr);
 }
