@@ -100,6 +100,13 @@ void test_iwdg_calc_values(void);
 void test_iwdg_calc_rejects(void);
 void test_iwdg_start_and_feed(void);
 
+/* --- adc (test_adc.c) --- */
+void test_adc_prescaler(void);
+void test_adc_vdda_and_mv(void);
+void test_adc_temp(void);
+void test_adc_start_sets_sequence(void);
+void test_adc_try_result(void);
+
 /* --- error (test_error.c) --- */
 void test_status_str_known(void);
 void test_status_str_unknown(void);
@@ -176,6 +183,12 @@ int main(void) {
   TEST_RUN(test_iwdg_calc_values);
   TEST_RUN(test_iwdg_calc_rejects);
   TEST_RUN(test_iwdg_start_and_feed);
+
+  TEST_RUN(test_adc_prescaler);
+  TEST_RUN(test_adc_vdda_and_mv);
+  TEST_RUN(test_adc_temp);
+  TEST_RUN(test_adc_start_sets_sequence);
+  TEST_RUN(test_adc_try_result);
 
   TEST_RUN(test_status_str_known);
   TEST_RUN(test_status_str_unknown);
