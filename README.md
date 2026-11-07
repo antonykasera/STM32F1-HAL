@@ -91,6 +91,7 @@ make flash EXAMPLE=button_interrupt
 make dfu
 
 # Build every example from clean, with warnings as errors
+# (each links only the modules in examples/<name>/modules.mk)
 make examples
 
 # Clean

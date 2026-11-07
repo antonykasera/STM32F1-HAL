@@ -42,11 +42,16 @@ LDFLAGS = $(MCU_FLAGS) \
 # CFLAGS  += -flto
 # LDFLAGS += -flto
 
-HAL_SRCS  = $(wildcard src/$(FAMILY)/*.c)
-CMN_SRCS  = $(wildcard src/common/*.c)
+# each example lists its flex modules in modules.mk (default: all), so unused
+# modules' IRQ handlers stay out of the image, the same as in consumer projects
+-include examples/$(EXAMPLE)/modules.mk
+FLEX_FAMILY := $(FAMILY)
+include flex.mk
+
+HAL_SRCS  = $(patsubst ./%,%,$(FLEX_SRCS))
 APP_SRCS  = $(wildcard examples/$(EXAMPLE)/*.c)
 
-SRCS = $(HAL_SRCS) $(CMN_SRCS) $(APP_SRCS)
+SRCS = $(HAL_SRCS) $(APP_SRCS)
 
 ASM = cmsis/startup/startup_stm32f103xb.s
 
