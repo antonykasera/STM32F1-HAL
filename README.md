@@ -8,6 +8,23 @@ A minimal Hardware Abstraction Layer for STM32 microcontrollers.
 |--------|---------------|---------|
 | F1     | STM32F103C8T6 | Active  |
 
+## Module Status
+
+Host = unit tests run on the PC (`make host-test`). Hardware = verified on a
+Blue Pill, mostly with a logic analyzer; dates are the last check.
+
+| Module | Host | Hardware | Pending |
+|--------|------|----------|---------|
+| GPIO   | yes  | 2026-11-07 (blink) | — |
+| Clock / SysTick | yes | 2026-11-07 (blink timing) | — |
+| EXTI   | —    | 2026-07 (button) | — |
+| Timer  | yes  | 2026-11-07 (basic_timer) | — |
+| PWM    | yes  | 2026-08 (1 kHz–12 MHz) | re-check after init split, stop |
+| UART   | yes  | 2026-11-08 (TX) | `try_read` / `flush` (uart_echo) |
+| I2C    | calc only | 2026-08 (blocking, AS5600) | ms timeouts; interrupt mode has known bugs |
+| CAN    | yes  | 2026-11-08 (loopback TX + RX) | RX interrupt, real bus |
+| AFIO remap | yes | 2026-11-08 (CAN on PB8/PB9) | — |
+
 ## Project Structure
 
 ```
