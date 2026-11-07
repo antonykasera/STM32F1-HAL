@@ -33,6 +33,20 @@ HAL_Status hal_adc_calc_prescaler(uint32_t pclk2_hz, uint8_t *code) {
   return HAL_ERR_PARAM;
 }
 
+/* 5 bits per slot: SQ1-6 in SQR3, SQ7-12 in SQR2, SQ13-16 and L in SQR1 */
+void hal_adc_calc_sequence(const uint8_t *channels, uint8_t n,
+                           uint32_t sqr[3]) {
+  sqr[0] = (uint32_t)(n - 1U) << ADC_SQR1_L_Pos;
+  sqr[1] = 0U;
+  sqr[2] = 0U;
+
+  for (uint32_t i = 0U; i < n; i++) {
+    uint32_t reg = 2U - (i / 6U);
+    uint32_t shift = 5U * (i % 6U);
+    sqr[reg] |= ((uint32_t)channels[i] & 0x1FU) << shift;
+  }
+}
+
 uint32_t hal_adc_calc_vdda_mv(uint16_t vrefint_raw) {
   if (vrefint_raw == 0U) {
     return 0U;

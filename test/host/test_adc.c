@@ -68,3 +68,28 @@ void test_adc_try_result(void) {
   ASSERT_EQ(hal_adc_try_result(&a, &v), HAL_OK);
   ASSERT_EQ(v, 0x0ABCU);
 }
+
+void test_adc_sequence_short(void) {
+  const uint8_t ch[] = {0U, 1U, ADC_CH_VREFINT, ADC_CH_TEMP};
+  uint32_t sqr[3];
+
+  hal_adc_calc_sequence(ch, 4U, sqr);
+
+  ASSERT_EQ(sqr[0], 0x00300000U); /* SQR1: L = 3 (4 conversions) */
+  ASSERT_EQ(sqr[1], 0U);          /* SQR2 unused */
+  ASSERT_EQ(sqr[2], 0x00084420U); /* SQR3: 0, 1, 17, 16 */
+}
+
+void test_adc_sequence_full(void) {
+  uint8_t ch[16];
+  uint32_t sqr[3];
+  for (uint8_t i = 0U; i < 16U; i++) {
+    ch[i] = i;
+  }
+
+  hal_adc_calc_sequence(ch, 16U, sqr);
+
+  ASSERT_EQ(sqr[0], 0x00F7B9ACU); /* SQ13-16 = 12..15, L = 15 */
+  ASSERT_EQ(sqr[1], 0x16A4A0E6U); /* SQ7-12 = 6..11 */
+  ASSERT_EQ(sqr[2], 0x0A418820U); /* SQ1-6 = 0..5 */
+}

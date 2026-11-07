@@ -24,8 +24,8 @@ Blue Pill, mostly with a logic analyzer; dates are the last check.
 | I2C    | calc only | 2026-08 (blocking, AS5600) | ms timeouts; interrupt mode has known bugs |
 | CAN    | yes  | 2026-11-08 (loopback TX + RX) | RX interrupt, real bus |
 | IWDG   | yes  | 2026-11-08 (iwdg_demo) | — |
-| ADC    | yes  | 2026-11-08 (PA0 0 V / 3.3 V, VDDA, temp) | — |
-| DMA    | yes  | 2026-11-08 (uart_dma) | ADC scan |
+| ADC    | yes  | 2026-11-08 (single + DMA scan: PA0/PA1, VDDA, temp) | — |
+| DMA    | yes  | 2026-11-08 (uart_dma, adc_scan) | — |
 | AFIO remap | yes | 2026-11-08 (CAN on PB8/PB9) | — |
 
 ## Project Structure
@@ -86,7 +86,8 @@ flex/
 │   ├── can_rx_irq/
 │   ├── iwdg_demo/
 │   ├── adc_read/
-│   └── uart_dma/
+│   ├── uart_dma/
+│   └── adc_scan/
 ├── test/
 │   └── host/
 │       ├── test_assert.h

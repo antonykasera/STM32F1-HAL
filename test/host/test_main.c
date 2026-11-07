@@ -106,6 +106,8 @@ void test_adc_vdda_and_mv(void);
 void test_adc_temp(void);
 void test_adc_start_sets_sequence(void);
 void test_adc_try_result(void);
+void test_adc_sequence_short(void);
+void test_adc_sequence_full(void);
 
 /* --- dma (test_dma.c) --- */
 void test_dma_ccr_uart_tx(void);
@@ -195,6 +197,8 @@ int main(void) {
   TEST_RUN(test_adc_temp);
   TEST_RUN(test_adc_start_sets_sequence);
   TEST_RUN(test_adc_try_result);
+  TEST_RUN(test_adc_sequence_short);
+  TEST_RUN(test_adc_sequence_full);
 
   TEST_RUN(test_dma_ccr_uart_tx);
   TEST_RUN(test_dma_ccr_adc_scan);

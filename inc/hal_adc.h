@@ -44,6 +44,21 @@ HAL_Status hal_adc_try_result(ADC_TypeDef *adc, uint16_t *value);
 HAL_Status hal_adc_read(ADC_TypeDef *adc, uint8_t channel, ADC_SampleTime st,
                         uint16_t *value);
 
+#define ADC_SCAN_MAX 16U
+
+/* ADC1 only: convert channels[0..n-1] over and over while DMA ch1 copies each
+ * result into buf[i]. buf updates in the background and must outlive the
+ * scan; a read may mix two rounds. No single reads until scan_stop. */
+HAL_Status hal_adc_scan_start(ADC_TypeDef *adc, const uint8_t *channels,
+                              uint8_t n, ADC_SampleTime st,
+                              volatile uint16_t *buf);
+/* lets the round in progress finish (~2 ms) so single reads start clean */
+void hal_adc_scan_stop(ADC_TypeDef *adc);
+
+/* SQR1, SQR2, SQR3 values for a regular sequence of n (1..16) channels */
+void hal_adc_calc_sequence(const uint8_t *channels, uint8_t n,
+                           uint32_t sqr[3]);
+
 /* ADCPRE code for the fastest ADC clock <= 14 MHz from pclk2 */
 HAL_Status hal_adc_calc_prescaler(uint32_t pclk2_hz, uint8_t *code);
 
