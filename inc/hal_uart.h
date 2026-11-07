@@ -11,6 +11,7 @@
 
 #include "hal_error.h"
 #include "stm32f103xb.h"
+#include <stdbool.h>
 #include <stdint.h>
 
 typedef enum {
@@ -40,6 +41,12 @@ HAL_Status hal_uart_try_read_byte(USART_TypeDef *uart, uint8_t *byte);
 
 /* wait until the last byte has left the pin, not just been queued */
 void hal_uart_flush(USART_TypeDef *uart);
+
+/* non-blocking send by DMA; buf must stay unchanged until tx_busy is false.
+ * HAL_ERR_BUSY while a previous one is still going out. */
+HAL_Status hal_uart_write_dma(USART_TypeDef *uart, const uint8_t *buf,
+                              uint16_t len);
+bool hal_uart_tx_busy(USART_TypeDef *uart);
 
 void hal_uart_write(USART_TypeDef *uart, const uint8_t *buf, uint32_t len);
 

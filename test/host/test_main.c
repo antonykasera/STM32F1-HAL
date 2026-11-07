@@ -107,6 +107,12 @@ void test_adc_temp(void);
 void test_adc_start_sets_sequence(void);
 void test_adc_try_result(void);
 
+/* --- dma (test_dma.c) --- */
+void test_dma_ccr_uart_tx(void);
+void test_dma_ccr_adc_scan(void);
+void test_dma_ccr_mem_to_mem(void);
+void test_dma_channel_index(void);
+
 /* --- error (test_error.c) --- */
 void test_status_str_known(void);
 void test_status_str_unknown(void);
@@ -189,6 +195,11 @@ int main(void) {
   TEST_RUN(test_adc_temp);
   TEST_RUN(test_adc_start_sets_sequence);
   TEST_RUN(test_adc_try_result);
+
+  TEST_RUN(test_dma_ccr_uart_tx);
+  TEST_RUN(test_dma_ccr_adc_scan);
+  TEST_RUN(test_dma_ccr_mem_to_mem);
+  TEST_RUN(test_dma_channel_index);
 
   TEST_RUN(test_status_str_known);
   TEST_RUN(test_status_str_unknown);

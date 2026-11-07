@@ -20,11 +20,12 @@ Blue Pill, mostly with a logic analyzer; dates are the last check.
 | EXTI   | —    | 2026-07 (button) | — |
 | Timer  | yes  | 2026-11-07 (basic_timer) | — |
 | PWM    | yes  | 2026-08 (1 kHz–12 MHz) | re-check after init split, stop |
-| UART   | yes  | 2026-11-08 (TX) | `try_read` / `flush` (uart_echo) |
+| UART   | yes  | 2026-11-08 (TX, `write_dma`) | `try_read` / `flush` (uart_echo) |
 | I2C    | calc only | 2026-08 (blocking, AS5600) | ms timeouts; interrupt mode has known bugs |
 | CAN    | yes  | 2026-11-08 (loopback TX + RX) | RX interrupt, real bus |
 | IWDG   | yes  | 2026-11-08 (iwdg_demo) | — |
 | ADC    | yes  | 2026-11-08 (PA0 0 V / 3.3 V, VDDA, temp) | — |
+| DMA    | yes  | 2026-11-08 (uart_dma) | ADC scan |
 | AFIO remap | yes | 2026-11-08 (CAN on PB8/PB9) | — |
 
 ## Project Structure
@@ -42,6 +43,7 @@ flex/
 │   ├── hal_can.h
 │   ├── hal_iwdg.h
 │   ├── hal_adc.h
+│   ├── hal_dma.h
 │   └── hal_clock.h
 ├── src/
 │   ├── f1/
@@ -61,7 +63,9 @@ flex/
 │   │   ├── hal_iwdg_f1.c
 │   │   ├── hal_iwdg_calc.c
 │   │   ├── hal_adc_f1.c
-│   │   └── hal_adc_calc.c
+│   │   ├── hal_adc_calc.c
+│   │   ├── hal_dma_f1.c
+│   │   └── hal_dma_calc.c
 │   └── common/
 │       └── hal_error.c
 ├── cmsis/
@@ -81,7 +85,8 @@ flex/
 │   ├── can_loopback/
 │   ├── can_rx_irq/
 │   ├── iwdg_demo/
-│   └── adc_read/
+│   ├── adc_read/
+│   └── uart_dma/
 ├── test/
 │   └── host/
 │       ├── test_assert.h
@@ -95,6 +100,7 @@ flex/
 │       ├── test_can.c
 │       ├── test_iwdg.c
 │       ├── test_adc.c
+│       ├── test_dma.c
 │       └── test_error.c
 ├── template/
 ├── Makefile
