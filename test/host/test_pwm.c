@@ -43,3 +43,13 @@ void test_pwm_duty_rounds_down(void) {
   /* integer division truncates: 333 permille of 100 counts = 33.3 -> 33. */
   ASSERT_EQ(hal_pwm_calc_ccr(333U, 99U), 33U);
 }
+
+void test_pwm_duty_full_at_max_arr(void) {
+  /* ARR = 0xFFFF, arr +1 doesn't fit in 16 bits.
+   * closest 16-bit CCR can get, CCR = ARR, high for
+   * all but one count of the period */
+  ASSERT_EQ(hal_pwm_calc_ccr(1000U, 0xFFFFU), 0xFFFFU);
+  ASSERT_EQ(hal_pwm_calc_ccr(5000U, 0xFFFFU), 0xFFFFU);
+
+  ASSERT_EQ(hal_pwm_calc_ccr(999U, 0xFFFFU), 65470U);
+}
