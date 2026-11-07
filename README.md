@@ -53,7 +53,8 @@ flex/
 │   ├── i2c_scan/
 │   ├── i2c_as5600/
 │   ├── i2c_as5600_it/
-│   └── can_loopback/
+│   ├── can_loopback/
+│   └── can_rx_irq/
 ├── test/
 │   └── host/
 │       ├── test_assert.h

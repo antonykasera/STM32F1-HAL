@@ -21,6 +21,13 @@
 #define CAN_STD_ID_MASK 0x7FFU
 #define CAN_EXT_ID_MASK 0x1FFFFFFFU
 #define CAN_DLC_MAX 8U
+#define CAN_QUEUE_MASK (CAN_RX_QUEUE_LEN - 1U)
+
+/* stops the compiler moving the frame copy past the index update */
+#define CAN_BARRIER() __asm__ volatile("" ::: "memory")
+
+_Static_assert((CAN_RX_QUEUE_LEN & CAN_QUEUE_MASK) == 0U,
+               "CAN_RX_QUEUE_LEN must be a power of two");
 
 /* split n tq into sync + ts1 + ts2 with the sample point nearest sp_permille */
 static void can_split(uint32_t n, uint32_t sp_permille, uint32_t *ts1,
@@ -147,6 +154,30 @@ void hal_can_mailbox_to_frame(const CAN_FIFOMailBox_TypeDef *mb, CAN_Frame *f) {
 
   can_unpack4(mb->RDLR, &f->data[0]);
   can_unpack4(mb->RDHR, &f->data[4]);
+}
+
+/* free-running indices: head - tail is the fill level, even across wrap */
+bool hal_can_queue_push(CAN_Queue *q, const CAN_Frame *f) {
+  uint32_t head = q->head;
+  if ((head - q->tail) >= CAN_RX_QUEUE_LEN) {
+    q->dropped = q->dropped + 1U;
+    return false;
+  }
+  q->buf[head & CAN_QUEUE_MASK] = *f;
+  CAN_BARRIER();
+  q->head = head + 1U;
+  return true;
+}
+
+bool hal_can_queue_pop(CAN_Queue *q, CAN_Frame *f) {
+  uint32_t tail = q->tail;
+  if (q->head == tail) {
+    return false;
+  }
+  *f = q->buf[tail & CAN_QUEUE_MASK];
+  CAN_BARRIER();
+  q->tail = tail + 1U;
+  return true;
 }
 
 /* filter registers use the same layout as RIR */

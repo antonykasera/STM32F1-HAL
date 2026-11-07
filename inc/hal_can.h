@@ -30,6 +30,19 @@ typedef struct {
   uint8_t data[8];
 } CAN_Frame;
 
+#ifndef CAN_RX_QUEUE_LEN
+#define CAN_RX_QUEUE_LEN 16U /* power of two */
+#endif
+
+/* single producer (RX interrupt), single consumer (superloop): each index is
+ * written by one side only, so no locking is needed */
+typedef struct {
+  CAN_Frame buf[CAN_RX_QUEUE_LEN];
+  volatile uint32_t head;    /* producer only */
+  volatile uint32_t tail;    /* consumer only */
+  volatile uint32_t dropped; /* producer only, never reset */
+} CAN_Queue;
+
 typedef enum {
   CAN_MODE_NORMAL,
   CAN_MODE_LOOPBACK,        /* TX fed back to RX inside the chip, no ACK needed */
@@ -70,6 +83,11 @@ void hal_can_filter_mask(CAN_TypeDef *can, uint8_t bank, uint32_t id,
 HAL_Status hal_can_try_send(CAN_TypeDef *can, const CAN_Frame *f);
 /* HAL_OK with a frame, HAL_ERR_EMPTY if that FIFO (0 or 1) holds none */
 HAL_Status hal_can_try_receive(CAN_TypeDef *can, uint8_t fifo, CAN_Frame *f);
+
+/* FIFO 0 frames move into a CAN_RX_QUEUE_LEN RAM queue on interrupt, so bursts
+ * survive a slow loop; try_receive(can, 0, ..) then reads the queue. Uses the
+ * RX0 vector shared with USB, so not usable alongside USB. */
+void hal_can_enable_rx_interrupt(CAN_TypeDef *can, uint8_t priority);
 void hal_can_get_errors(CAN_TypeDef *can, CAN_Errors *e);
 
 HAL_Status hal_can_calc_timing(uint32_t pclk_hz, uint32_t bitrate,
@@ -80,6 +98,10 @@ uint32_t hal_can_calc_btr(const CAN_Timing *t);
 void hal_can_frame_to_mailbox(const CAN_Frame *f, CAN_TxMailBox_TypeDef *mb);
 
 void hal_can_mailbox_to_frame(const CAN_FIFOMailBox_TypeDef *mb, CAN_Frame *f);
+
+/* false (and dropped++) when full / false when empty */
+bool hal_can_queue_push(CAN_Queue *q, const CAN_Frame *f);
+bool hal_can_queue_pop(CAN_Queue *q, CAN_Frame *f);
 
 uint32_t hal_can_calc_filter_id(uint32_t id, bool extended);
 uint32_t hal_can_calc_filter_mask(uint32_t mask, bool extended);

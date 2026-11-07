@@ -202,3 +202,63 @@ void test_can_get_errors(void) {
   ASSERT_TRUE(e.rx_overrun);
   ASSERT_EQ(c.RF1R, 0U); /* FIFO 1 had no overrun: untouched */
 }
+
+/* RX queue (filled by the interrupt, drained by the loop) */
+
+static CAN_Frame frame_n(uint32_t n) {
+  CAN_Frame f = {0x100U, false, false, 1U, {0}};
+  f.data[0] = (uint8_t)n;
+  return f;
+}
+
+void test_can_queue_fifo_order(void) {
+  static CAN_Queue q;
+  CAN_Frame out;
+
+  ASSERT_TRUE(!hal_can_queue_pop(&q, &out)); /* empty */
+  for (uint32_t i = 0U; i < 5U; i++) {
+    CAN_Frame in = frame_n(i);
+    ASSERT_TRUE(hal_can_queue_push(&q, &in));
+  }
+  for (uint32_t i = 0U; i < 5U; i++) {
+    ASSERT_TRUE(hal_can_queue_pop(&q, &out));
+    ASSERT_EQ(out.data[0], i);
+  }
+  ASSERT_TRUE(!hal_can_queue_pop(&q, &out));
+}
+
+void test_can_queue_full_drops_newest(void) {
+  static CAN_Queue q;
+  CAN_Frame in;
+  CAN_Frame out;
+
+  for (uint32_t i = 0U; i < CAN_RX_QUEUE_LEN; i++) {
+    in = frame_n(i);
+    ASSERT_TRUE(hal_can_queue_push(&q, &in));
+  }
+  in = frame_n(99U);
+  ASSERT_TRUE(!hal_can_queue_push(&q, &in));
+  ASSERT_EQ(q.dropped, 1U);
+
+  ASSERT_TRUE(hal_can_queue_pop(&q, &out));
+  ASSERT_EQ(out.data[0], 0U); /* oldest kept, the overflow frame lost */
+}
+
+void test_can_queue_index_wrap(void) {
+  static CAN_Queue q;
+  CAN_Frame out;
+
+  /* indices about to wrap past 2^32: fill level must still be head - tail */
+  q.head = 0xFFFFFFFEU;
+  q.tail = 0xFFFFFFFEU;
+  for (uint32_t i = 0U; i < 4U; i++) {
+    CAN_Frame in = frame_n(i);
+    ASSERT_TRUE(hal_can_queue_push(&q, &in));
+  }
+  ASSERT_EQ(q.head, 2U);
+  for (uint32_t i = 0U; i < 4U; i++) {
+    ASSERT_TRUE(hal_can_queue_pop(&q, &out));
+    ASSERT_EQ(out.data[0], i);
+  }
+  ASSERT_EQ(q.dropped, 0U);
+}

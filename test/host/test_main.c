@@ -91,6 +91,9 @@ void test_can_filter_mask_bank(void);
 void test_can_try_send(void);
 void test_can_try_receive(void);
 void test_can_get_errors(void);
+void test_can_queue_fifo_order(void);
+void test_can_queue_full_drops_newest(void);
+void test_can_queue_index_wrap(void);
 
 /* --- error (test_error.c) --- */
 void test_status_str_known(void);
@@ -161,6 +164,9 @@ int main(void) {
   TEST_RUN(test_can_try_send);
   TEST_RUN(test_can_try_receive);
   TEST_RUN(test_can_get_errors);
+  TEST_RUN(test_can_queue_fifo_order);
+  TEST_RUN(test_can_queue_full_drops_newest);
+  TEST_RUN(test_can_queue_index_wrap);
 
   TEST_RUN(test_status_str_known);
   TEST_RUN(test_status_str_unknown);

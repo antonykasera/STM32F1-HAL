@@ -18,6 +18,10 @@
 #define CAN_STD_ID_MAX 0x7FFU
 #define CAN_EXT_ID_MAX 0x1FFFFFFFU
 
+static CAN_Queue can_rx_queue;
+static volatile bool can_rx_irq_on;
+static uint32_t can_rx_dropped_seen;
+
 static HAL_Status can_wait_msr(const CAN_TypeDef *can, uint32_t mask,
                                uint32_t want, uint32_t timeout_ms) {
   uint32_t start = hal_get_tick();
@@ -141,6 +145,10 @@ HAL_Status hal_can_try_receive(CAN_TypeDef *can, uint8_t fifo, CAN_Frame *f) {
     return HAL_ERR_PARAM;
   }
 
+  if ((fifo == 0U) && can_rx_irq_on) {
+    return hal_can_queue_pop(&can_rx_queue, f) ? HAL_OK : HAL_ERR_EMPTY;
+  }
+
   volatile uint32_t *rfr = (fifo == 0U) ? &can->RF0R : &can->RF1R;
   if ((*rfr & CAN_RF0R_FMP0) == 0U) {
     return HAL_ERR_EMPTY;
@@ -163,7 +171,10 @@ void hal_can_get_errors(CAN_TypeDef *can, CAN_Errors *e) {
 
   uint32_t ovr0 = can->RF0R & CAN_RF0R_FOVR0;
   uint32_t ovr1 = can->RF1R & CAN_RF1R_FOVR1;
-  e->rx_overrun = (ovr0 | ovr1) != 0U;
+  /* only the ISR writes dropped, so compare against what was last seen */
+  uint32_t dropped = can_rx_queue.dropped;
+  e->rx_overrun = ((ovr0 | ovr1) != 0U) || (dropped != can_rx_dropped_seen);
+  can_rx_dropped_seen = dropped;
 
   /* rc_w1: write 1 to clear only the overrun flags just read */
   if (ovr0 != 0U) {
@@ -172,4 +183,23 @@ void hal_can_get_errors(CAN_TypeDef *can, CAN_Errors *e) {
   if (ovr1 != 0U) {
     can->RF1R = CAN_RF1R_FOVR1;
   }
+}
+
+void hal_can_enable_rx_interrupt(CAN_TypeDef *can, uint8_t priority) {
+  HAL_ASSERT(can == CAN1);
+
+  can_rx_irq_on = true;
+  can->IER |= CAN_IER_FMPIE0;
+  __NVIC_SetPriority(CAN1_RX0_IRQn, priority);
+  __NVIC_EnableIRQ(CAN1_RX0_IRQn);
+}
+
+/* One frame per entry: FMPIE0 keeps the IRQ pending while FIFO 0 is non-empty,
+ * and re-reading FMP right after RFOM could see the old count. */
+void CAN1_RX0_IRQHandler(void) {
+  CAN_Frame f;
+
+  hal_can_mailbox_to_frame(&CAN1->sFIFOMailBox[0], &f);
+  CAN1->RF0R = CAN_RF0R_RFOM0;
+  (void)hal_can_queue_push(&can_rx_queue, &f);
 }
