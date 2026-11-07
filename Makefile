@@ -94,11 +94,13 @@ flash-ocd: $(BUILD)/$(TARGET).elf
 gdbserver:
 	openocd $(OPENOCD_CFG)
 
+# -nx stops gdb auto-loading ./.gdbinit (when it is on the auto-load safe path),
+# so -x runs it exactly once: one connect, one load, one break at main.
 gdb: $(BUILD)/$(TARGET).elf
 	@openocd $(OPENOCD_CFG) >/tmp/flex-openocd.log 2>&1 & \
 	OCD_PID=$$!; \
 	sleep 1; \
-	arm-none-eabi-gdb $(BUILD)/$(TARGET).elf -x .gdbinit; \
+	arm-none-eabi-gdb -nx $(BUILD)/$(TARGET).elf -x .gdbinit; \
 	kill $$OCD_PID 2>/dev/null; true
 
 # Flash via USB DFU (STM32duino/Maple bootloader: alt-setting 2, VID:PID 1EAF:0003)
