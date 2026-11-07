@@ -124,3 +124,81 @@ void test_can_mailbox_to_frame(void) {
   ASSERT_TRUE(f.remote);
   ASSERT_EQ(f.dlc, 8U);
 }
+
+void test_can_filter_values(void) {
+  /* same layout as RIR; the mask always compares IDE */
+  ASSERT_EQ(hal_can_calc_filter_id(0x123U, false), 0x123U << 21);
+  ASSERT_EQ(hal_can_calc_filter_mask(0x7FFU, false), 0xFFE00004U);
+  ASSERT_EQ(hal_can_calc_filter_id(0x12345678U, true),
+            (0x12345678U << 3) | CAN_RI0R_IDE);
+  ASSERT_EQ(hal_can_calc_filter_mask(0x1FFFFFFFU, true), 0xFFFFFFFCU);
+}
+
+/* driver tests on a CAN_TypeDef in host RAM */
+
+void test_can_filter_mask_bank(void) {
+  static CAN_TypeDef c; /* static: zeroed and off the stack */
+  c.FMR = CAN_FMR_FINIT;
+  c.FM1R = 1U << 3;
+
+  hal_can_filter_mask(&c, 3U, 0x123U, 0x7FFU, false, 1U);
+
+  ASSERT_EQ(c.FS1R, 1U << 3);  /* 32-bit scale */
+  ASSERT_EQ(c.FM1R, 0U);       /* mask mode */
+  ASSERT_EQ(c.FFA1R, 1U << 3); /* FIFO 1 */
+  ASSERT_EQ(c.FA1R, 1U << 3);  /* active */
+  ASSERT_EQ(c.FMR & CAN_FMR_FINIT, 0U);
+  ASSERT_EQ(c.sFilterRegister[3].FR1, 0x123U << 21);
+  ASSERT_EQ(c.sFilterRegister[3].FR2, 0xFFE00004U);
+}
+
+void test_can_try_send(void) {
+  static CAN_TypeDef c;
+  CAN_Frame f = {0x123U, false, false, 1U, {0xAAU}};
+
+  c.TSR = 0U; /* all three mailboxes pending */
+  ASSERT_EQ(hal_can_try_send(&c, &f), HAL_ERR_BUSY);
+
+  /* mailboxes 1 and 2 free, CODE names 1 as next */
+  c.TSR = CAN_TSR_TME1 | CAN_TSR_TME2 | (1U << CAN_TSR_CODE_Pos);
+  ASSERT_EQ(hal_can_try_send(&c, &f), HAL_OK);
+  ASSERT_EQ(c.sTxMailBox[1].TIR, (0x123U << 21) | CAN_TI0R_TXRQ);
+  ASSERT_EQ(c.sTxMailBox[1].TDLR, 0xAAU);
+  ASSERT_EQ(c.sTxMailBox[0].TIR, 0U);
+}
+
+void test_can_try_receive(void) {
+  static CAN_TypeDef c;
+  CAN_Frame f = {0};
+
+  ASSERT_EQ(hal_can_try_receive(&c, 0U, &f), HAL_ERR_EMPTY);
+
+  c.RF1R = 1U; /* FMP1: one frame pending in FIFO 1 */
+  c.sFIFOMailBox[1].RIR = 0x321U << 21;
+  c.sFIFOMailBox[1].RDTR = 1U;
+  c.sFIFOMailBox[1].RDLR = 0x5AU;
+  ASSERT_EQ(hal_can_try_receive(&c, 1U, &f), HAL_OK);
+  ASSERT_EQ(f.id, 0x321U);
+  ASSERT_EQ(f.data[0], 0x5AU);
+  ASSERT_EQ(c.RF1R, CAN_RF1R_RFOM1); /* slot released */
+}
+
+void test_can_get_errors(void) {
+  static CAN_TypeDef c;
+  CAN_Errors e = {0};
+
+  c.ESR = (200U << CAN_ESR_REC_Pos) | (130U << CAN_ESR_TEC_Pos) |
+          (3U << CAN_ESR_LEC_Pos) | CAN_ESR_EPVF | CAN_ESR_EWGF;
+  c.RF0R = CAN_RF0R_FOVR0;
+
+  hal_can_get_errors(&c, &e);
+
+  ASSERT_EQ(e.rec, 200U);
+  ASSERT_EQ(e.tec, 130U);
+  ASSERT_EQ(e.last_error, 3U); /* ack error: nobody acknowledged */
+  ASSERT_TRUE(e.passive);
+  ASSERT_TRUE(e.warning);
+  ASSERT_TRUE(!e.bus_off);
+  ASSERT_TRUE(e.rx_overrun);
+  ASSERT_EQ(c.RF1R, 0U); /* FIFO 1 had no overrun: untouched */
+}

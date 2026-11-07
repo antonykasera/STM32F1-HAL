@@ -20,6 +20,7 @@ flex/
 │   ├── hal_pwm.h
 │   ├── hal_uart.h
 │   ├── hal_i2c.h
+│   ├── hal_can.h
 │   └── hal_clock.h
 ├── src/
 │   ├── f1/
@@ -33,7 +34,9 @@ flex/
 │   │   ├── hal_uart_f1.c
 │   │   ├── hal_uart_calc.c
 │   │   ├── hal_i2c_f1.c
-│   │   └── hal_i2c_calc.c
+│   │   ├── hal_i2c_calc.c
+│   │   ├── hal_can_f1.c
+│   │   └── hal_can_calc.c
 │   └── common/
 │       └── hal_error.c
 ├── cmsis/
@@ -49,7 +52,8 @@ flex/
 │   ├── cycle_profile/
 │   ├── i2c_scan/
 │   ├── i2c_as5600/
-│   └── i2c_as5600_it/
+│   ├── i2c_as5600_it/
+│   └── can_loopback/
 ├── test/
 │   └── host/
 │       ├── test_assert.h
@@ -60,6 +64,7 @@ flex/
 │       ├── test_pwm.c
 │       ├── test_uart.c
 │       ├── test_i2c.c
+│       ├── test_can.c
 │       └── test_error.c
 ├── template/
 ├── Makefile

@@ -148,3 +148,16 @@ void hal_can_mailbox_to_frame(const CAN_FIFOMailBox_TypeDef *mb, CAN_Frame *f) {
   can_unpack4(mb->RDLR, &f->data[0]);
   can_unpack4(mb->RDHR, &f->data[4]);
 }
+
+/* filter registers use the same layout as RIR */
+uint32_t hal_can_calc_filter_id(uint32_t id, bool extended) {
+  if (extended) {
+    return ((id & CAN_EXT_ID_MASK) << CAN_RI0R_EXID_Pos) | CAN_RI0R_IDE;
+  }
+  return (id & CAN_STD_ID_MASK) << CAN_RI0R_STID_Pos;
+}
+
+/* IDE is always compared, so a filter never matches the other id type */
+uint32_t hal_can_calc_filter_mask(uint32_t mask, bool extended) {
+  return hal_can_calc_filter_id(mask, extended) | CAN_RI0R_IDE;
+}

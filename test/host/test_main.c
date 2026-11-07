@@ -86,6 +86,11 @@ void test_can_frame_to_mailbox_standard(void);
 void test_can_frame_to_mailbox_extended(void);
 void test_can_frame_to_mailbox_remote(void);
 void test_can_mailbox_to_frame(void);
+void test_can_filter_values(void);
+void test_can_filter_mask_bank(void);
+void test_can_try_send(void);
+void test_can_try_receive(void);
+void test_can_get_errors(void);
 
 /* --- error (test_error.c) --- */
 void test_status_str_known(void);
@@ -151,6 +156,11 @@ int main(void) {
   TEST_RUN(test_can_frame_to_mailbox_extended);
   TEST_RUN(test_can_frame_to_mailbox_remote);
   TEST_RUN(test_can_mailbox_to_frame);
+  TEST_RUN(test_can_filter_values);
+  TEST_RUN(test_can_filter_mask_bank);
+  TEST_RUN(test_can_try_send);
+  TEST_RUN(test_can_try_receive);
+  TEST_RUN(test_can_get_errors);
 
   TEST_RUN(test_status_str_known);
   TEST_RUN(test_status_str_unknown);

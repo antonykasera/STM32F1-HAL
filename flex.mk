@@ -35,7 +35,7 @@ FLEX_CFLAGS := $(FLEX_MCU_FLAGS) $(FLEX_DEFS) $(FLEX_INC)
 # --- library sources  ---
 # IRQ handlers override the startup's weak ones, so --gc-sections can't drop an
 # unused module: list only what you use. Deps (missing one = link error):
-#   timer, uart -> clock   pwm -> timer, clock   i2c -> gpio, clock
+#   timer, uart, can -> clock   pwm -> timer, clock   i2c -> gpio, clock
 FLEX_MODULES ?= gpio clock exti timer pwm uart i2c can
 
 FLEX_SRCS := $(wildcard $(foreach m,$(FLEX_MODULES),$(FLEX_ROOT)/src/$(FLEX_FAMILY)/hal_$(m)_*.c)) \
