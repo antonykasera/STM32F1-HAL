@@ -162,6 +162,8 @@ TEST_SRCS = $(wildcard test/host/*.c) \
             src/f1/hal_i2c_calc.c \
             src/f1/hal_can_calc.c \
             src/f1/hal_can_f1.c \
+            src/f1/hal_iwdg_calc.c \
+            src/f1/hal_iwdg_f1.c \
             $(wildcard src/common/*.c)
 
 host-test:

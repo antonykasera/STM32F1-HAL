@@ -23,6 +23,7 @@ Blue Pill, mostly with a logic analyzer; dates are the last check.
 | UART   | yes  | 2026-11-08 (TX) | `try_read` / `flush` (uart_echo) |
 | I2C    | calc only | 2026-08 (blocking, AS5600) | ms timeouts; interrupt mode has known bugs |
 | CAN    | yes  | 2026-11-08 (loopback TX + RX) | RX interrupt, real bus |
+| IWDG   | yes  | — | iwdg_demo (measured timeout = LSI) |
 | AFIO remap | yes | 2026-11-08 (CAN on PB8/PB9) | — |
 
 ## Project Structure
@@ -38,6 +39,7 @@ flex/
 │   ├── hal_uart.h
 │   ├── hal_i2c.h
 │   ├── hal_can.h
+│   ├── hal_iwdg.h
 │   └── hal_clock.h
 ├── src/
 │   ├── f1/
@@ -53,7 +55,9 @@ flex/
 │   │   ├── hal_i2c_f1.c
 │   │   ├── hal_i2c_calc.c
 │   │   ├── hal_can_f1.c
-│   │   └── hal_can_calc.c
+│   │   ├── hal_can_calc.c
+│   │   ├── hal_iwdg_f1.c
+│   │   └── hal_iwdg_calc.c
 │   └── common/
 │       └── hal_error.c
 ├── cmsis/
@@ -71,7 +75,8 @@ flex/
 │   ├── i2c_as5600/
 │   ├── i2c_as5600_it/
 │   ├── can_loopback/
-│   └── can_rx_irq/
+│   ├── can_rx_irq/
+│   └── iwdg_demo/
 ├── test/
 │   └── host/
 │       ├── test_assert.h
@@ -83,6 +88,7 @@ flex/
 │       ├── test_uart.c
 │       ├── test_i2c.c
 │       ├── test_can.c
+│       ├── test_iwdg.c
 │       └── test_error.c
 ├── template/
 ├── Makefile

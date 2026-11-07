@@ -95,6 +95,11 @@ void test_can_queue_fifo_order(void);
 void test_can_queue_full_drops_newest(void);
 void test_can_queue_index_wrap(void);
 
+/* --- iwdg (test_iwdg.c) --- */
+void test_iwdg_calc_values(void);
+void test_iwdg_calc_rejects(void);
+void test_iwdg_start_and_feed(void);
+
 /* --- error (test_error.c) --- */
 void test_status_str_known(void);
 void test_status_str_unknown(void);
@@ -167,6 +172,10 @@ int main(void) {
   TEST_RUN(test_can_queue_fifo_order);
   TEST_RUN(test_can_queue_full_drops_newest);
   TEST_RUN(test_can_queue_index_wrap);
+
+  TEST_RUN(test_iwdg_calc_values);
+  TEST_RUN(test_iwdg_calc_rejects);
+  TEST_RUN(test_iwdg_start_and_feed);
 
   TEST_RUN(test_status_str_known);
   TEST_RUN(test_status_str_unknown);
