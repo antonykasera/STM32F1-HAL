@@ -76,6 +76,17 @@ void test_i2c_ccr_fast(void);
 void test_i2c_trise_standard(void);
 void test_i2c_trise_fast(void);
 
+/* --- can (test_can.c) --- */
+void test_can_timing_common_rates(void);
+void test_can_timing_tie_prefers_more_tq(void);
+void test_can_timing_hsi_default_clock(void);
+void test_can_timing_rejects_impossible(void);
+void test_can_btr_stores_minus_one(void);
+void test_can_frame_to_mailbox_standard(void);
+void test_can_frame_to_mailbox_extended(void);
+void test_can_frame_to_mailbox_remote(void);
+void test_can_mailbox_to_frame(void);
+
 /* --- error (test_error.c) --- */
 void test_status_str_known(void);
 void test_status_str_unknown(void);
@@ -130,6 +141,16 @@ int main(void) {
   TEST_RUN(test_i2c_ccr_fast);
   TEST_RUN(test_i2c_trise_standard);
   TEST_RUN(test_i2c_trise_fast);
+
+  TEST_RUN(test_can_timing_common_rates);
+  TEST_RUN(test_can_timing_tie_prefers_more_tq);
+  TEST_RUN(test_can_timing_hsi_default_clock);
+  TEST_RUN(test_can_timing_rejects_impossible);
+  TEST_RUN(test_can_btr_stores_minus_one);
+  TEST_RUN(test_can_frame_to_mailbox_standard);
+  TEST_RUN(test_can_frame_to_mailbox_extended);
+  TEST_RUN(test_can_frame_to_mailbox_remote);
+  TEST_RUN(test_can_mailbox_to_frame);
 
   TEST_RUN(test_status_str_known);
   TEST_RUN(test_status_str_unknown);
