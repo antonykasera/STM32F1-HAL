@@ -29,6 +29,7 @@ typedef enum {
   HAL_ERR_BUS,
   HAL_ERR_BUSY,
   HAL_ERR_EMPTY,
+  HAL_ERR_WRITE, /* flash: not erased, write-protected or failed verify */
 } HAL_Status;
 
 const char *hal_status_str(HAL_Status status);

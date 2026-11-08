@@ -144,6 +144,22 @@ void test_rtc_set_get(void);
 void test_rtc_alarm_at(void);
 void test_rtc_alarm_fired_once(void);
 
+/* --- crc (test_crc.c) --- */
+void test_crc_calc_vectors(void);
+void test_crc_calc_chains(void);
+void test_crc_reset_and_feed(void);
+
+/* --- flash (test_flash.c) --- */
+void test_flash_erase_page(void);
+void test_flash_erase_reports_protection(void);
+void test_flash_write_halfwords(void);
+void test_flash_write_stops_on_error(void);
+void test_flash_write_skips_equal(void);
+
+/* --- wwdg (test_wwdg.c) --- */
+void test_wwdg_calc_values(void);
+void test_wwdg_calc_rejects(void);
+
 /* --- error (test_error.c) --- */
 void test_status_str_known(void);
 void test_status_str_unknown(void);
@@ -257,6 +273,19 @@ int main(void) {
   TEST_RUN(test_rtc_set_get);
   TEST_RUN(test_rtc_alarm_at);
   TEST_RUN(test_rtc_alarm_fired_once);
+
+  TEST_RUN(test_crc_calc_vectors);
+  TEST_RUN(test_crc_calc_chains);
+  TEST_RUN(test_crc_reset_and_feed);
+
+  TEST_RUN(test_flash_erase_page);
+  TEST_RUN(test_flash_erase_reports_protection);
+  TEST_RUN(test_flash_write_halfwords);
+  TEST_RUN(test_flash_write_stops_on_error);
+  TEST_RUN(test_flash_write_skips_equal);
+
+  TEST_RUN(test_wwdg_calc_values);
+  TEST_RUN(test_wwdg_calc_rejects);
 
   TEST_RUN(test_status_str_known);
   TEST_RUN(test_status_str_unknown);

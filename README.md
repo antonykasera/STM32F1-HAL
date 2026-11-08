@@ -30,8 +30,11 @@ Blue Pill, mostly with a logic analyzer; dates are the last check.
 | Encoder | yes | 2026-11-08 (encoder_selftest) | real encoder |
 | Capture | yes | 2026-11-08 (capture_selftest) | — |
 | TIM1   | yes  | 2026-11-08 (1 us dead time, break to low, re-arm) | — |
-| RTC    | yes  | — | lowpower_demo |
-| PWR    | —    | — | lowpower_demo (Stop, Standby) |
+| RTC    | yes  | 2026-11-08 (lowpower_demo: alarm, backup regs) | — |
+| PWR    | —    | 2026-11-08 (lowpower_demo: Stop, Standby) | — |
+| Flash  | yes  | — | flash_store |
+| CRC    | yes  | — | flash_store |
+| WWDG   | calc only | — | wwdg_demo (early and late) |
 | AFIO remap | yes | 2026-11-08 (CAN on PB8/PB9) | — |
 
 ## Project Structure
@@ -56,6 +59,9 @@ flex/
 │   ├── hal_tim1.h
 │   ├── hal_rtc.h
 │   ├── hal_pwr.h
+│   ├── hal_flash.h
+│   ├── hal_crc.h
+│   ├── hal_wwdg.h
 │   └── hal_clock.h
 ├── src/
 │   ├── f1/
@@ -85,7 +91,12 @@ flex/
 │   │   ├── hal_tim1_f1.c
 │   │   ├── hal_tim1_calc.c
 │   │   ├── hal_rtc_f1.c
-│   │   └── hal_pwr_f1.c
+│   │   ├── hal_pwr_f1.c
+│   │   ├── hal_flash_f1.c
+│   │   ├── hal_crc_f1.c
+│   │   ├── hal_crc_calc.c
+│   │   ├── hal_wwdg_f1.c
+│   │   └── hal_wwdg_calc.c
 │   └── common/
 │       └── hal_error.c
 ├── cmsis/
@@ -112,7 +123,9 @@ flex/
 │   ├── encoder_selftest/
 │   ├── capture_selftest/
 │   ├── tim1_deadtime/
-│   └── lowpower_demo/
+│   ├── lowpower_demo/
+│   ├── flash_store/
+│   └── wwdg_demo/
 ├── test/
 │   └── host/
 │       ├── test_assert.h
@@ -132,6 +145,9 @@ flex/
 │       ├── test_capture.c
 │       ├── test_tim1.c
 │       ├── test_rtc.c
+│       ├── test_flash.c
+│       ├── test_crc.c
+│       ├── test_wwdg.c
 │       └── test_error.c
 ├── template/
 ├── Makefile

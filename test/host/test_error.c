@@ -24,6 +24,7 @@ void test_status_str_known(void) {
   ASSERT_TRUE(streq(hal_status_str(HAL_ERR_BUS), "HAL_ERR_BUS"));
   ASSERT_TRUE(streq(hal_status_str(HAL_ERR_BUSY), "HAL_ERR_BUSY"));
   ASSERT_TRUE(streq(hal_status_str(HAL_ERR_EMPTY), "HAL_ERR_EMPTY"));
+  ASSERT_TRUE(streq(hal_status_str(HAL_ERR_WRITE), "HAL_ERR_WRITE"));
 }
 
 void test_status_str_unknown(void) {
