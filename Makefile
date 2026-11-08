@@ -108,10 +108,6 @@ gdb: $(BUILD)/$(TARGET).elf
 	arm-none-eabi-gdb -nx $(BUILD)/$(TARGET).elf -x .gdbinit; \
 	kill $$OCD_PID 2>/dev/null; true
 
-# Flash via USB DFU (STM32duino/Maple bootloader: alt-setting 2, VID:PID 1EAF:0003)
-dfu: $(BUILD)/$(TARGET).bin
-	sudo dfu-util -w -a 2 -d 1EAF:0003 -D $(BUILD)/$(TARGET).bin
-
 clean:
 	rm -rf $(BUILD_ROOT)
 
@@ -193,4 +189,4 @@ host-test:
 	./$(HOST_BUILD)/test_runner
 	@echo "--- Host tests passed ---"
 
-.PHONY: all size sections syms disasm stackusage flash flash-ocd gdbserver gdb dfu clean examples debug compdb host-test
+.PHONY: all size sections syms disasm stackusage flash flash-ocd gdbserver gdb clean examples debug compdb host-test

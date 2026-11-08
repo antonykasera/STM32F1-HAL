@@ -186,8 +186,8 @@ make EXAMPLE=button_interrupt
 # Flash via ST-Link. EXAMPLE selects the image, and defaults to blink.
 make flash EXAMPLE=button_interrupt
 
-# Flash via USB DFU (STM32duino/Maple bootloader)
-make dfu
+# Same through openocd, with verify
+make flash-ocd EXAMPLE=button_interrupt
 
 # Build every example from clean, with warnings as errors
 # (each links only the modules in examples/<name>/modules.mk)
@@ -196,6 +196,16 @@ make examples
 # Clean
 make clean
 ```
+
+Without an ST-Link, the F103's ROM bootloader takes USART1 (it has no USB
+DFU; that came with the F105/F107). Set BOOT0 to 1, reset, and with a USB-UART
+adapter on PA9/PA10 (not yet tried on the bench):
+
+```bash
+stm32flash -w build/blink/firmware.bin -v -g 0x08000000 /dev/ttyUSB0
+```
+
+Set BOOT0 back to 0 afterwards, or the next reset starts the bootloader again.
 
 ## Debugging
 
