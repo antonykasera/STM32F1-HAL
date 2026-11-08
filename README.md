@@ -1,6 +1,7 @@
 # flex Hardware Abstraction Layer for STM32
 
 [![CI](https://github.com/antonykasera/STM32F1-HAL/actions/workflows/ci.yml/badge.svg)](https://github.com/antonykasera/STM32F1-HAL/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/antonykasera/STM32F1-HAL)](https://github.com/antonykasera/STM32F1-HAL/releases/latest)
 
 A minimal Hardware Abstraction Layer for STM32 microcontrollers.
 
