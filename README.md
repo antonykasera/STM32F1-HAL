@@ -19,7 +19,7 @@ Blue Pill, mostly with a logic analyzer; dates are the last check.
 | Clock / SysTick | yes | 2026-11-07 (blink timing) | — |
 | EXTI   | —    | 2026-07 (button) | — |
 | Timer  | yes  | 2026-11-07 (basic_timer) | — |
-| PWM    | yes  | 2026-08 (1 kHz–12 MHz) | re-check after init split, stop |
+| PWM    | yes  | 2026-11-08 (init split, 1 kHz measured by capture) | `hal_pwm_stop` |
 | UART   | yes  | 2026-11-08 (TX, `write_dma`) | `try_read` / `flush` (uart_echo) |
 | I2C    | calc only | 2026-08 (blocking, AS5600) | ms timeouts; interrupt mode has known bugs |
 | CAN    | yes  | 2026-11-08 (loopback TX + RX) | RX interrupt, real bus |
@@ -27,7 +27,8 @@ Blue Pill, mostly with a logic analyzer; dates are the last check.
 | ADC    | yes  | 2026-11-08 (single + DMA scan: PA0/PA1, VDDA, temp) | — |
 | DMA    | yes  | 2026-11-08 (uart_dma, adc_scan) | — |
 | SPI    | yes  | 2026-11-08 (loopback, blocking + DMA) | — |
-| Encoder | yes | — | encoder_selftest |
+| Encoder | yes | 2026-11-08 (encoder_selftest) | real encoder |
+| Capture | yes | 2026-11-08 (capture_selftest) | — |
 | AFIO remap | yes | 2026-11-08 (CAN on PB8/PB9) | — |
 
 ## Project Structure
@@ -48,6 +49,7 @@ flex/
 │   ├── hal_dma.h
 │   ├── hal_spi.h
 │   ├── hal_encoder.h
+│   ├── hal_capture.h
 │   └── hal_clock.h
 ├── src/
 │   ├── f1/
@@ -72,7 +74,8 @@ flex/
 │   │   ├── hal_dma_calc.c
 │   │   ├── hal_spi_f1.c
 │   │   ├── hal_spi_calc.c
-│   │   └── hal_encoder_f1.c
+│   │   ├── hal_encoder_f1.c
+│   │   └── hal_capture_f1.c
 │   └── common/
 │       └── hal_error.c
 ├── cmsis/
@@ -96,7 +99,8 @@ flex/
 │   ├── uart_dma/
 │   ├── adc_scan/
 │   ├── spi_loopback/
-│   └── encoder_selftest/
+│   ├── encoder_selftest/
+│   └── capture_selftest/
 ├── test/
 │   └── host/
 │       ├── test_assert.h
@@ -113,6 +117,7 @@ flex/
 │       ├── test_dma.c
 │       ├── test_spi.c
 │       ├── test_encoder.c
+│       ├── test_capture.c
 │       └── test_error.c
 ├── template/
 ├── Makefile

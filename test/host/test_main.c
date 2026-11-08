@@ -126,6 +126,11 @@ void test_encoder_delta_wraps(void);
 void test_encoder_init_registers(void);
 void test_encoder_update_accumulates(void);
 
+/* --- capture (test_capture.c) --- */
+void test_capture_psc(void);
+void test_capture_init_registers(void);
+void test_capture_read(void);
+
 /* --- error (test_error.c) --- */
 void test_status_str_known(void);
 void test_status_str_unknown(void);
@@ -224,6 +229,10 @@ int main(void) {
   TEST_RUN(test_encoder_delta_wraps);
   TEST_RUN(test_encoder_init_registers);
   TEST_RUN(test_encoder_update_accumulates);
+
+  TEST_RUN(test_capture_psc);
+  TEST_RUN(test_capture_init_registers);
+  TEST_RUN(test_capture_read);
 
   TEST_RUN(test_status_str_known);
   TEST_RUN(test_status_str_unknown);
