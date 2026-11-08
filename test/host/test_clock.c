@@ -15,16 +15,16 @@
 
 void test_flash_latency_boundaries(void) {
   /* 0 wait states up to and including 24 MHz */
-  ASSERT_EQ(hal_clock_flash_latency_for(8000000U), FLASH_ACR_LATENCY_0);
-  ASSERT_EQ(hal_clock_flash_latency_for(24000000U), FLASH_ACR_LATENCY_0);
+  ASSERT_EQ(hal_clock_flash_latency_for(8000000U), 0U);
+  ASSERT_EQ(hal_clock_flash_latency_for(24000000U), 0U);
 
   /* 1 wait state above 24 up to and including 48 MHz */
-  ASSERT_EQ(hal_clock_flash_latency_for(24000001U), FLASH_ACR_LATENCY_1);
-  ASSERT_EQ(hal_clock_flash_latency_for(48000000U), FLASH_ACR_LATENCY_1);
+  ASSERT_EQ(hal_clock_flash_latency_for(24000001U), 1U);
+  ASSERT_EQ(hal_clock_flash_latency_for(48000000U), 1U);
 
   /* 2 wait states above 48 MHz */
-  ASSERT_EQ(hal_clock_flash_latency_for(48000001U), FLASH_ACR_LATENCY_2);
-  ASSERT_EQ(hal_clock_flash_latency_for(72000000U), FLASH_ACR_LATENCY_2);
+  ASSERT_EQ(hal_clock_flash_latency_for(48000001U), 2U);
+  ASSERT_EQ(hal_clock_flash_latency_for(72000000U), 2U);
 }
 
 void test_sysclk_from_config(void) {
@@ -49,7 +49,7 @@ void test_sysclk_from_config(void) {
 void test_default_config_picks_2ws(void) {
   /* default cfg -> 72 MHz -> 2 wait states */
   uint32_t sysclk = hal_clock_sysclk_for(&CLOCK_CONFIG_72MHZ_HSE);
-  ASSERT_EQ(hal_clock_flash_latency_for(sysclk), FLASH_ACR_LATENCY_2);
+  ASSERT_EQ(hal_clock_flash_latency_for(sysclk), 2U);
 }
 
 void test_tick_expired(void) {

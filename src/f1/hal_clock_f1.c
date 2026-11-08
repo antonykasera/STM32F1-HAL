@@ -45,14 +45,16 @@ static const uint32_t apb2_cfgr_bits[] = {
 
 static const uint8_t apb_div_values[] = {1, 2, 4, 8, 16};
 
+/* LATENCY field value = wait states. Not FLASH_ACR_LATENCY_0/1/2: those are
+ * the field's bits (1, 2, 4), and 4 is a reserved encoding */
 uint32_t hal_clock_flash_latency_for(uint32_t sysclk) {
   if (sysclk <= 24000000U) {
-    return FLASH_ACR_LATENCY_0;
+    return 0U;
   }
   if (sysclk <= 48000000U) {
-    return FLASH_ACR_LATENCY_1;
+    return 1U;
   }
-  return FLASH_ACR_LATENCY_2;
+  return 2U;
 }
 
 uint32_t hal_clock_sysclk_for(const Clock_Config *cfg) {

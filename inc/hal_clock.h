@@ -45,6 +45,7 @@ typedef struct {
 
 extern const Clock_Config CLOCK_CONFIG_72MHZ_HSE;
 
+/* flash wait states for sysclk_hz (0..2), the FLASH_ACR LATENCY field value */
 uint32_t hal_clock_flash_latency_for(uint32_t sysclk_hz);
 uint32_t hal_clock_sysclk_for(const Clock_Config *cfg);
 
