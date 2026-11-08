@@ -181,6 +181,8 @@ TEST_SRCS = $(wildcard test/host/*.c) \
             src/f1/hal_flash_f1.c \
             src/f1/hal_wwdg_calc.c \
             src/f1/hal_wwdg_f1.c \
+            src/f1/hal_usb_calc.c \
+            src/f1/hal_usb_desc.c \
             $(wildcard src/common/*.c)
 
 host-test:

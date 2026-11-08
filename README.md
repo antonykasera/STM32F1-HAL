@@ -35,6 +35,7 @@ Blue Pill, mostly with a logic analyzer; dates are the last check.
 | Flash  | yes  | — | flash_store |
 | CRC    | yes  | — | flash_store |
 | WWDG   | calc only | — | wwdg_demo (early and late) |
+| USB CDC | yes | 2026-11-08 (usb_cdc_echo: enumerate, echo, paste, reset, polled + IRQ) | can't link with CAN |
 | AFIO remap | yes | 2026-11-08 (CAN on PB8/PB9) | — |
 
 ## Project Structure
@@ -62,6 +63,7 @@ flex/
 │   ├── hal_flash.h
 │   ├── hal_crc.h
 │   ├── hal_wwdg.h
+│   ├── hal_usb.h
 │   └── hal_clock.h
 ├── src/
 │   ├── f1/
@@ -96,7 +98,10 @@ flex/
 │   │   ├── hal_crc_f1.c
 │   │   ├── hal_crc_calc.c
 │   │   ├── hal_wwdg_f1.c
-│   │   └── hal_wwdg_calc.c
+│   │   ├── hal_wwdg_calc.c
+│   │   ├── hal_usb_f1.c
+│   │   ├── hal_usb_calc.c
+│   │   └── hal_usb_desc.c
 │   └── common/
 │       └── hal_error.c
 ├── cmsis/
@@ -125,7 +130,8 @@ flex/
 │   ├── tim1_deadtime/
 │   ├── lowpower_demo/
 │   ├── flash_store/
-│   └── wwdg_demo/
+│   ├── wwdg_demo/
+│   └── usb_cdc_echo/
 ├── test/
 │   └── host/
 │       ├── test_assert.h
@@ -148,6 +154,7 @@ flex/
 │       ├── test_flash.c
 │       ├── test_crc.c
 │       ├── test_wwdg.c
+│       ├── test_usb.c
 │       └── test_error.c
 ├── template/
 ├── Makefile

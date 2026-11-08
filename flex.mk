@@ -37,8 +37,10 @@ FLEX_CFLAGS := $(FLEX_MCU_FLAGS) $(FLEX_DEFS) $(FLEX_INC)
 # unused module: list only what you use. Deps (missing one = link error):
 #   timer, uart, can, iwdg, wwdg, adc, spi, rtc, pwr -> clock
 #   pwm, encoder, capture -> timer, clock   tim1 -> pwm, timer, clock
-#   i2c -> gpio, clock   flash, crc -> nothing
+#   i2c, usb -> gpio, clock   flash, crc -> nothing
 #   uart, adc, spi -> dma too, only if their *_dma / scan functions are used
+# usb is left out of the default: it and can share an IRQ handler (and SRAM),
+# so linking both is a duplicate-symbol error
 FLEX_MODULES ?= gpio clock exti timer pwm uart i2c can iwdg adc dma spi encoder capture tim1 rtc pwr flash crc wwdg
 
 FLEX_SRCS := $(wildcard $(foreach m,$(FLEX_MODULES),$(FLEX_ROOT)/src/$(FLEX_FAMILY)/hal_$(m)_*.c)) \

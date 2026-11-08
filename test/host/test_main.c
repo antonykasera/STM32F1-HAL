@@ -160,6 +160,18 @@ void test_flash_write_skips_equal(void);
 void test_wwdg_calc_values(void);
 void test_wwdg_calc_rejects(void);
 
+/* --- usb (test_usb.c) --- */
+void test_usb_epr_cases(void);
+void test_usb_epr_exhaustive(void);
+void test_usb_count_rx(void);
+void test_usb_ring_wraps(void);
+void test_usb_parse_setup(void);
+void test_usb_device_descriptor(void);
+void test_usb_config_descriptor(void);
+void test_usb_string_descriptors(void);
+void test_usb_address_and_config(void);
+void test_usb_cdc_requests(void);
+
 /* --- error (test_error.c) --- */
 void test_status_str_known(void);
 void test_status_str_unknown(void);
@@ -286,6 +298,17 @@ int main(void) {
 
   TEST_RUN(test_wwdg_calc_values);
   TEST_RUN(test_wwdg_calc_rejects);
+
+  TEST_RUN(test_usb_epr_cases);
+  TEST_RUN(test_usb_epr_exhaustive);
+  TEST_RUN(test_usb_count_rx);
+  TEST_RUN(test_usb_ring_wraps);
+  TEST_RUN(test_usb_parse_setup);
+  TEST_RUN(test_usb_device_descriptor);
+  TEST_RUN(test_usb_config_descriptor);
+  TEST_RUN(test_usb_string_descriptors);
+  TEST_RUN(test_usb_address_and_config);
+  TEST_RUN(test_usb_cdc_requests);
 
   TEST_RUN(test_status_str_known);
   TEST_RUN(test_status_str_unknown);
