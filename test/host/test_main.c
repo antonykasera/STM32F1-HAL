@@ -115,6 +115,12 @@ void test_dma_ccr_adc_scan(void);
 void test_dma_ccr_mem_to_mem(void);
 void test_dma_channel_index(void);
 
+/* --- spi (test_spi.c) --- */
+void test_spi_calc_br(void);
+void test_spi_calc_br_rejects(void);
+void test_spi_calc_cr1(void);
+void test_spi_transfer_loop(void);
+
 /* --- error (test_error.c) --- */
 void test_status_str_known(void);
 void test_status_str_unknown(void);
@@ -204,6 +210,11 @@ int main(void) {
   TEST_RUN(test_dma_ccr_adc_scan);
   TEST_RUN(test_dma_ccr_mem_to_mem);
   TEST_RUN(test_dma_channel_index);
+
+  TEST_RUN(test_spi_calc_br);
+  TEST_RUN(test_spi_calc_br_rejects);
+  TEST_RUN(test_spi_calc_cr1);
+  TEST_RUN(test_spi_transfer_loop);
 
   TEST_RUN(test_status_str_known);
   TEST_RUN(test_status_str_unknown);

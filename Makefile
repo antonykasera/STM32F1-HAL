@@ -86,8 +86,10 @@ size: $(BUILD)/$(TARGET).elf
 $(BUILD):
 	mkdir -p $(BUILD)
 
+# --reset: without it the old program's peripherals (e.g. a circular DMA) keep
+# running into the new program's RAM
 flash: $(BUILD)/$(TARGET).bin
-	st-flash write $(BUILD)/$(TARGET).bin 0x8000000
+	st-flash --reset write $(BUILD)/$(TARGET).bin 0x8000000
 
 OPENOCD_CFG = -f interface/stlink.cfg -f target/stm32f1x.cfg
 
@@ -113,8 +115,7 @@ dfu: $(BUILD)/$(TARGET).bin
 clean:
 	rm -rf $(BUILD_ROOT)
 
-# Build every example from clean with warnings as errors, so an object left over
-# from an earlier build can't hide a warning.
+# Build every example from clean with warnings as errors
 EXAMPLES = $(notdir $(patsubst %/,%,$(wildcard examples/*/)))
 
 examples: clean
@@ -168,6 +169,8 @@ TEST_SRCS = $(wildcard test/host/*.c) \
             src/f1/hal_adc_f1.c \
             src/f1/hal_dma_calc.c \
             src/f1/hal_dma_f1.c \
+            src/f1/hal_spi_calc.c \
+            src/f1/hal_spi_f1.c \
             $(wildcard src/common/*.c)
 
 host-test:

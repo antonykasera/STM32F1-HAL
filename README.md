@@ -26,6 +26,7 @@ Blue Pill, mostly with a logic analyzer; dates are the last check.
 | IWDG   | yes  | 2026-11-08 (iwdg_demo) | — |
 | ADC    | yes  | 2026-11-08 (single + DMA scan: PA0/PA1, VDDA, temp) | — |
 | DMA    | yes  | 2026-11-08 (uart_dma, adc_scan) | — |
+| SPI    | yes  | 2026-11-08 (loopback, blocking + DMA) | — |
 | AFIO remap | yes | 2026-11-08 (CAN on PB8/PB9) | — |
 
 ## Project Structure
@@ -44,6 +45,7 @@ flex/
 │   ├── hal_iwdg.h
 │   ├── hal_adc.h
 │   ├── hal_dma.h
+│   ├── hal_spi.h
 │   └── hal_clock.h
 ├── src/
 │   ├── f1/
@@ -65,7 +67,9 @@ flex/
 │   │   ├── hal_adc_f1.c
 │   │   ├── hal_adc_calc.c
 │   │   ├── hal_dma_f1.c
-│   │   └── hal_dma_calc.c
+│   │   ├── hal_dma_calc.c
+│   │   ├── hal_spi_f1.c
+│   │   └── hal_spi_calc.c
 │   └── common/
 │       └── hal_error.c
 ├── cmsis/
@@ -87,7 +91,8 @@ flex/
 │   ├── iwdg_demo/
 │   ├── adc_read/
 │   ├── uart_dma/
-│   └── adc_scan/
+│   ├── adc_scan/
+│   └── spi_loopback/
 ├── test/
 │   └── host/
 │       ├── test_assert.h
@@ -102,6 +107,7 @@ flex/
 │       ├── test_iwdg.c
 │       ├── test_adc.c
 │       ├── test_dma.c
+│       ├── test_spi.c
 │       └── test_error.c
 ├── template/
 ├── Makefile

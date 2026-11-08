@@ -58,8 +58,9 @@ $(BUILD)/$(TARGET).bin: $(BUILD)/$(TARGET).elf
 size: $(BUILD)/$(TARGET).elf
 	$(SIZE) $<
 
+# --reset: without it the old program's peripherals keep running
 flash: $(BUILD)/$(TARGET).bin
-	st-flash write $< 0x8000000
+	st-flash --reset write $< 0x8000000
 
 $(BUILD):
 	mkdir -p $(BUILD)
