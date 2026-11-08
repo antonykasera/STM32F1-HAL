@@ -2,7 +2,7 @@
  * @file hal_usb_f1.c
  * @brief STM32F1 USB full-speed device driver, CDC-ACM
  *
- * Copyright (c) 2026.
+ * Copyright (c) 2026 Antony Kasera
  * SPDX-License-Identifier: MIT
  *
  * Every endpoint register access happens in usb_service(), from

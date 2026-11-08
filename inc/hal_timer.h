@@ -2,7 +2,7 @@
  * @file hal_timer.h
  * @brief TIMER Configurations
  *
- * Copyright (c) 2026 Flex HAL Project.
+ * Copyright (c) 2026 Antony Kasera
  * SPDX-License-Identifier: MIT
  */
 
@@ -15,14 +15,15 @@
 
 typedef void (*timer_callback_t)(void);
 
-HAL_Status hal_timer_solve_psc_arr(uint32_t timer_clk_hz, uint32_t freq_hz,
+HAL_Status hal_timer_calc_psc_arr(uint32_t timer_clk_hz, uint32_t freq_hz,
                                    uint16_t *psc, uint16_t *arr);
 
 HAL_Status hal_timer_base_config(TIM_TypeDef *tim, uint16_t psc, uint16_t arr);
 
 void hal_timer_init(TIM_TypeDef *tim, uint16_t psc, uint16_t arr);
 
-void hal_timer_init_hz(TIM_TypeDef *tim, uint32_t freq_hz);
+/* HAL_ERR_PARAM if freq_hz can't be reached from the timer clock */
+HAL_Status hal_timer_init_hz(TIM_TypeDef *tim, uint32_t freq_hz);
 
 void hal_timer_deinit(TIM_TypeDef *tim);
 

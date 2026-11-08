@@ -2,7 +2,7 @@
  * @file hal_timer_calc.c
  * @brief Timer arithmetic
  *
- * Copyright (c) 2026.
+ * Copyright (c) 2026 Antony Kasera
  * SPDX-License-Identifier: MIT
  *
  */
@@ -13,7 +13,7 @@
 
 /* smallest PSC keeping ticks/(PSC+1) <= 65536, i.e. max ARR (duty resolution).
  * ticks < 2 has no valid ARR: ARR = 0 blocks the counter (RM0008). */
-HAL_Status hal_timer_solve_psc_arr(uint32_t timer_clk_hz, uint32_t freq_hz,
+HAL_Status hal_timer_calc_psc_arr(uint32_t timer_clk_hz, uint32_t freq_hz,
                                    uint16_t *psc, uint16_t *arr) {
   if ((freq_hz == 0U) || (psc == NULL) || (arr == NULL)) {
     return HAL_ERR_PARAM;

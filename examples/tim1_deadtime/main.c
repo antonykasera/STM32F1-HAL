@@ -8,7 +8,7 @@
  * in hardware; remove the jumper and the loop re-arms them. Prints on USART1
  * (PA9, 115200).
  *
- * Copyright (c) 2026.
+ * Copyright (c) 2026 Antony Kasera
  * SPDX-License-Identifier: MIT
  */
 

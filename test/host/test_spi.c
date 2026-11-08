@@ -2,7 +2,7 @@
  * @file test_spi.c
  * @brief Host-side unit tests for the F1 SPI clock/CR1 math and transfer loop
  *
- * Copyright (c) 2026 Flex HAL Project.
+ * Copyright (c) 2026 Antony Kasera
  * SPDX-License-Identifier: MIT
  *
  * SCK = pclk / (2 << BR), master max 18 MHz (datasheet).

@@ -7,7 +7,7 @@
  * 32.768 kHz crystal on PC14/PC15 (accurate); LSI is the ~40 kHz internal RC,
  * 30-60 kHz per the datasheet, so seconds can be +-50% off.
  *
- * Copyright (c) 2026.
+ * Copyright (c) 2026 Antony Kasera
  * SPDX-License-Identifier: MIT
  */
 

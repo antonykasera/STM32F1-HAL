@@ -6,16 +6,16 @@
  * capture/compare channels. The timer counts 0..ARR (setting the frequency);
  * the output is high while CNT < CCR, so CCR sets the duty cycle. Output is
  * driven by timer hardware (no CPU/ISR per edge) — configure the pin as
- * alternate-function push-pull. Advanced-timer features (TIM1 break/dead-time)
- * are out of scope.
+ * alternate-function push-pull. TIM1 (dead time, break) is hal_tim1.h.
  *
- * Copyright (c) 2026.
+ * Copyright (c) 2026 Antony Kasera
  * SPDX-License-Identifier: MIT
  */
 
 #ifndef HAL_PWM_H
 #define HAL_PWM_H
 
+#include "hal_error.h"
 #include "stm32f103xb.h"
 #include <stdbool.h>
 #include <stdint.h>
@@ -24,8 +24,9 @@ typedef enum { PWM_CH1 = 0, PWM_CH2, PWM_CH3, PWM_CH4 } PWM_Channel;
 
 uint16_t hal_pwm_calc_ccr(uint16_t permille, uint16_t arr);
 
-/* frequency is per timer, shared by its channels: init once, then each channel */
-void hal_pwm_init(TIM_TypeDef *tim, uint32_t freq_hz);
+/* frequency is per timer, shared by its channels: init once, then each channel.
+ * HAL_ERR_PARAM if freq_hz can't be reached from the timer clock */
+HAL_Status hal_pwm_init(TIM_TypeDef *tim, uint32_t freq_hz);
 void hal_pwm_channel_init(TIM_TypeDef *tim, PWM_Channel ch);
 
 void hal_pwm_set_duty_permille(TIM_TypeDef *tim, PWM_Channel ch,

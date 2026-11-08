@@ -2,7 +2,7 @@
  * @file hal_iwdg_calc.c
  * @brief IWDG timeout arithmetic
  *
- * Copyright (c) 2026.
+ * Copyright (c) 2026 Antony Kasera
  * SPDX-License-Identifier: MIT
  *
  * timeout = (4 << PR) * (RLR + 1) / f_LSI  (RM0008)

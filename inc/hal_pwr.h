@@ -13,7 +13,7 @@
  * A debugger loses the chip in Stop/Standby unless hal_pwr_debug_keepalive
  * is on (which keeps clocks running, so current readings are meaningless).
  *
- * Copyright (c) 2026.
+ * Copyright (c) 2026 Antony Kasera
  * SPDX-License-Identifier: MIT
  */
 

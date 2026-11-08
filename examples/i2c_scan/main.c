@@ -5,7 +5,7 @@
  * Wiring: SCL = PB6, SDA = PB7, with pull-ups to 3.3V. Serial output on USART1
  * (PA9 TX), 115200 8N1.
  *
- * Copyright (c) 2026.
+ * Copyright (c) 2026 Antony Kasera
  * SPDX-License-Identifier: MIT
  */
 

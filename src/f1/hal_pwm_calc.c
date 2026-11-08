@@ -2,7 +2,7 @@
  * @file hal_pwm_calc.c
  * @brief PWM duty arithmetic
  *
- * Copyright (c) 2026.
+ * Copyright (c) 2026 Antony Kasera
  * SPDX-License-Identifier: MIT
  *
  */

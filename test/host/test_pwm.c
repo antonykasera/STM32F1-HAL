@@ -2,7 +2,7 @@
  * @file test_pwm.c
  * @brief Host-side unit tests for the F1 PWM duty math
  *
- * Copyright (c) 2026 Flex HAL Project.
+ * Copyright (c) 2026 Antony Kasera
  * SPDX-License-Identifier: MIT
  *
  * Invariant: the period spans (arr + 1) counts, so CCR = permille*(arr+1)/1000,

@@ -2,7 +2,7 @@
  * @file test_wwdg.c
  * @brief Host-side unit tests for the F1 WWDG timeout/window math
  *
- * Copyright (c) 2026 Flex HAL Project.
+ * Copyright (c) 2026 Antony Kasera
  * SPDX-License-Identifier: MIT
  *
  * At PCLK1 = 36 MHz one tick is 113.78 us << WDGTB.

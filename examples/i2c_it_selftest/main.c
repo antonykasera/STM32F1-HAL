@@ -13,7 +13,7 @@
  *
  * Wiring: SCL=PB6, SDA=PB7, pull-ups to 3.3V. Nothing at 0x37 (NACK case).
  *
- * Copyright (c) 2026.
+ * Copyright (c) 2026 Antony Kasera
  * SPDX-License-Identifier: MIT
  */
 
@@ -108,6 +108,7 @@ int main(void) {
   hal_gpio_init_port_clock(I2C_PORT);
   (void)hal_i2c_bus_recover(I2C1, I2C_PORT, I2C_SCL, I2C_SDA, &cfg);
   hal_i2c_register_callback(I2C1, on_done);
+  hal_i2c_set_priority(I2C1, 5U); /* 0..15, lower pre-empts higher */
   hal_delay_ms(20U); /* AS5600 power-up, if it came up with us */
 
   print("\r\ni2c interrupt selftest\r\n");

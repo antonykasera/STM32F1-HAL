@@ -2,7 +2,7 @@
  * @file hal_flash_f1.c
  * @brief STM32F1 flash program/erase controller (FPEC) driver
  *
- * Copyright (c) 2026.
+ * Copyright (c) 2026 Antony Kasera
  * SPDX-License-Identifier: MIT
  *
  * Sequences from PM0075.

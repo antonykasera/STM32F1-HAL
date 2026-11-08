@@ -6,7 +6,7 @@
  * fraction (duty) ramps up and down. Wire an external LED (with a resistor) or
  * a scope to PA6 to see the effect.
  *
- * Copyright (c) 2026.
+ * Copyright (c) 2026 Antony Kasera
  * SPDX-License-Identifier: MIT
  */
 

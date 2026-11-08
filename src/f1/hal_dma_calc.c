@@ -2,7 +2,7 @@
  * @file hal_dma_calc.c
  * @brief DMA channel register arithmetic
  *
- * Copyright (c) 2026.
+ * Copyright (c) 2026 Antony Kasera
  * SPDX-License-Identifier: MIT
  */
 

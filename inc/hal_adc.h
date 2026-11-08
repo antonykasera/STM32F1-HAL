@@ -5,7 +5,7 @@
  * Channels 0-7 = PA0-PA7, 8-9 = PB0-PB1 (pins as GPIO_MODE_ANALOG), 16 = temp
  * sensor, 17 = VREFINT (ADC1 only).
  *
- * Copyright (c) 2026.
+ * Copyright (c) 2026 Antony Kasera
  * SPDX-License-Identifier: MIT
  */
 

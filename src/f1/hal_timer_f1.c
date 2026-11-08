@@ -2,7 +2,7 @@
  * @file hal_timer_f1.c
  * @brief STM32F1 TIMER implementation
  *
- * Copyright (c) 2026.
+ * Copyright (c) 2026 Antony Kasera
  * SPDX-License-Identifier: MIT
  */
 
@@ -78,17 +78,18 @@ void hal_timer_init(TIM_TypeDef *tim, uint16_t psc, uint16_t arr) {
   __NVIC_EnableIRQ(timer_irq_vectors[timer_index(tim)]);
 }
 
-void hal_timer_init_hz(TIM_TypeDef *tim, uint32_t freq_hz) {
+HAL_Status hal_timer_init_hz(TIM_TypeDef *tim, uint32_t freq_hz) {
   uint16_t psc = 0U;
   uint16_t arr = 0U;
-  HAL_Status st = hal_timer_solve_psc_arr(hal_clock_get_timer_clk_hz(tim),
+  HAL_Status st = hal_timer_calc_psc_arr(hal_clock_get_timer_clk_hz(tim),
                                           freq_hz, &psc, &arr);
   HAL_ASSERT(st == HAL_OK);
   if (st != HAL_OK) {
-    return;
+    return st;
   }
 
   hal_timer_init(tim, psc, arr);
+  return HAL_OK;
 }
 
 void hal_timer_deinit(TIM_TypeDef *tim) {

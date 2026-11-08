@@ -2,7 +2,7 @@
  * @file hal_capture_f1.c
  * @brief STM32F1 pulse measurement in PWM input mode, TIM2/3/4
  *
- * Copyright (c) 2026.
+ * Copyright (c) 2026 Antony Kasera
  * SPDX-License-Identifier: MIT
  */
 
@@ -61,7 +61,7 @@ HAL_Status hal_capture_init(Capture *c, TIM_TypeDef *tim, uint32_t tick_hz) {
 }
 
 /* the counter runs 0..CCRx before the reset edge, so +1 (RM0008 Fig. 128) */
-HAL_Status hal_capture_read(Capture *c, uint32_t *period, uint32_t *high) {
+HAL_Status hal_capture_try_read(Capture *c, uint32_t *period, uint32_t *high) {
   if ((c->tim->SR & TIM_SR_CC1IF) == 0U) {
     return HAL_ERR_EMPTY;
   }

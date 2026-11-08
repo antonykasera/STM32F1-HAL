@@ -2,7 +2,7 @@
  * @file hal_i2c_calc.c
  * @brief I2C timing arithmetic
  *
- * Copyright (c) 2026.
+ * Copyright (c) 2026 Antony Kasera
  * SPDX-License-Identifier: MIT
  *
  * CCR sets SCL timing from the APB1 clock. Standard mode (<=100 kHz) is a 1:1

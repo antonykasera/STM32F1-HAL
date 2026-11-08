@@ -6,7 +6,7 @@
  * blink keeps its rhythm whether or not bytes arrive, since nothing waits for
  * input. Wiring: PA9 TX, PA10 RX, 115200 8N1.
  *
- * Copyright (c) 2026.
+ * Copyright (c) 2026 Antony Kasera
  * SPDX-License-Identifier: MIT
  */
 

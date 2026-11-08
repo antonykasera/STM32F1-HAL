@@ -2,7 +2,7 @@
  * @file main.c
  * @brief Button interrupt example using the HAL
  *
- * Copyright (c) 2026.
+ * Copyright (c) 2026 Antony Kasera
  * SPDX-License-Identifier: MIT
  *
  * RC low pass filter or some form of debouncing is expected.
@@ -54,7 +54,7 @@ int main(void) {
 
   /* initialize pin as alternate function and specify
    * edge trigger type */
-  hal_exti_init(BTN_PORT, BTN_PIN, FALLING_EDGE);
+  hal_exti_init(BTN_PORT, BTN_PIN, EXTI_EDGE_FALLING);
 
   /* attach the function callback to the interrupt line */
   hal_exti_register_callback(BTN_PIN, blink_LED);

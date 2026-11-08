@@ -7,7 +7,7 @@
  * 1 us ticks. Prints on USART1 (PA9, 115200), e.g.
  *   period 1000 us, high 250 us (want 1000 / 250)
  *
- * Copyright (c) 2026.
+ * Copyright (c) 2026 Antony Kasera
  * SPDX-License-Identifier: MIT
  */
 
@@ -65,7 +65,7 @@ int main(void) {
 
     uint32_t period = 0U;
     uint32_t high = 0U;
-    if (hal_capture_read(&cap, &period, &high) == HAL_OK) {
+    if (hal_capture_try_read(&cap, &period, &high) == HAL_OK) {
       print("period ");
       print_u32(period);
       print(" us, high ");

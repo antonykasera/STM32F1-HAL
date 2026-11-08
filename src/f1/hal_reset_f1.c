@@ -2,7 +2,7 @@
  * @file hal_reset_f1.c
  * @brief STM32F1 reset cause and software reset
  *
- * Copyright (c) 2026.
+ * Copyright (c) 2026 Antony Kasera
  * SPDX-License-Identifier: MIT
  */
 

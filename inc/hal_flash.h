@@ -7,7 +7,7 @@
  * wait and SysTick drops up to ~40 ms of ticks per erase. Needs the HSI on
  * (flex never turns it off). Each call unlocks, works, then relocks.
  *
- * Copyright (c) 2026.
+ * Copyright (c) 2026 Antony Kasera
  * SPDX-License-Identifier: MIT
  */
 

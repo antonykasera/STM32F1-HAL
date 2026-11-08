@@ -2,7 +2,7 @@
  * @file hal_usb_desc.c
  * @brief CDC-ACM descriptors and control request decoding (no registers)
  *
- * Copyright (c) 2026.
+ * Copyright (c) 2026 Antony Kasera
  * SPDX-License-Identifier: MIT
  *
  * USB 2.0 ch. 9 standard requests, CDC 1.2 PSTN class requests.

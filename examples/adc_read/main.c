@@ -7,7 +7,7 @@
  * Check: PA0 to GND reads near 0, to 3V3 near 4095, and vdda should match a
  * multimeter on 3V3 within the VREFINT spread (about +-3%).
  *
- * Copyright (c) 2026.
+ * Copyright (c) 2026 Antony Kasera
  * SPDX-License-Identifier: MIT
  */
 

@@ -2,7 +2,7 @@
  * @file hal_uart_f1.c
  * @brief STM32F1 UART (USART async) implementation
  *
- * Copyright (c) 2026.
+ * Copyright (c) 2026 Antony Kasera
  * SPDX-License-Identifier: MIT
  */
 
@@ -14,7 +14,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-void hal_uart_init(USART_TypeDef *uart, const UART_Config *cfg) {
+HAL_Status hal_uart_init(USART_TypeDef *uart, const UART_Config *cfg) {
   HAL_ASSERT(uart == USART1 || uart == USART2 || uart == USART3);
 
   uint32_t pclk;
@@ -29,7 +29,12 @@ void hal_uart_init(USART_TypeDef *uart, const UART_Config *cfg) {
     pclk = hal_clock_get_pclk1_hz();
   }
 
-  uart->BRR = hal_uart_calc_brr(pclk, cfg->baud);
+  uint16_t brr = hal_uart_calc_brr(pclk, cfg->baud);
+  HAL_ASSERT(brr != 0U); /* baud above pclk / 16 or below pclk / 65535 */
+  if (brr == 0U) {
+    return HAL_ERR_PARAM;
+  }
+  uart->BRR = brr;
 
   uart->CR2 &= ~USART_CR2_STOP;
   if (cfg->stop == UART_STOP_2) {
@@ -46,6 +51,7 @@ void hal_uart_init(USART_TypeDef *uart, const UART_Config *cfg) {
   }
 
   uart->CR1 |= (USART_CR1_TE | USART_CR1_RE | USART_CR1_UE);
+  return HAL_OK;
 }
 
 void hal_uart_write_byte(USART_TypeDef *uart, uint8_t byte) {
@@ -105,7 +111,7 @@ HAL_Status hal_uart_write_dma(USART_TypeDef *uart, const uint8_t *buf,
 }
 
 /* DMA done means the bytes reached DR; TC means the last one left the pin */
-bool hal_uart_tx_busy(USART_TypeDef *uart) {
+bool hal_uart_tx_busy(const USART_TypeDef *uart) {
   const DMA_Channel_TypeDef *ch = uart_tx_dma(uart);
 
   if ((ch->CCR & DMA_CCR_EN) == 0U) {
@@ -114,8 +120,8 @@ bool hal_uart_tx_busy(USART_TypeDef *uart) {
   return (hal_dma_remaining(ch) != 0U) || ((uart->SR & USART_SR_TC) == 0U);
 }
 
-void hal_uart_write(USART_TypeDef *uart, const uint8_t *buf, uint32_t len) {
-  for (uint32_t i = 0U; i < len; i++) {
+void hal_uart_write(USART_TypeDef *uart, const uint8_t *buf, size_t len) {
+  for (size_t i = 0U; i < len; i++) {
     hal_uart_write_byte(uart, buf[i]);
   }
 }

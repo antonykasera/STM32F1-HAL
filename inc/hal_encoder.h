@@ -7,7 +7,7 @@
  * inputs (pull-up for open-collector encoders): TIM2 PA0/PA1, TIM3 PA6/PA7,
  * TIM4 PB6/PB7.
  *
- * Copyright (c) 2026.
+ * Copyright (c) 2026 Antony Kasera
  * SPDX-License-Identifier: MIT
  */
 

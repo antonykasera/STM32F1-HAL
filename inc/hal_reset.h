@@ -2,7 +2,7 @@
  * @file hal_reset.h
  * @brief Reset cause and software reset
  *
- * Copyright (c) 2026.
+ * Copyright (c) 2026 Antony Kasera
  * SPDX-License-Identifier: MIT
  */
 

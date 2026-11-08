@@ -9,7 +9,7 @@
  * DMA channels are fixed (RM0008): SPI1 RX 2 / TX 3, SPI2 RX 4 / TX 5. SPI2 RX
  * shares channel 4 with USART1 TX, so not both by DMA at once.
  *
- * Copyright (c) 2026.
+ * Copyright (c) 2026 Antony Kasera
  * SPDX-License-Identifier: MIT
  */
 
@@ -19,6 +19,7 @@
 #include "hal_error.h"
 #include "stm32f103xb.h"
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
 
 #define SPI_SCK_MAX_HZ 18000000U /* master, datasheet */
@@ -41,13 +42,13 @@ void hal_spi_deinit(SPI_TypeDef *spi);
 
 /* full duplex, len bytes: tx NULL sends 0xFF, rx NULL discards */
 HAL_Status hal_spi_transfer(SPI_TypeDef *spi, const uint8_t *tx, uint8_t *rx,
-                            uint16_t len);
+                            size_t len);
 
 /* same, by DMA; buffers must stay put until busy is false. HAL_ERR_BUSY while
  * a previous one is running. */
 HAL_Status hal_spi_transfer_dma(SPI_TypeDef *spi, const uint8_t *tx,
                                 uint8_t *rx, uint16_t len);
-bool hal_spi_busy(SPI_TypeDef *spi);
+bool hal_spi_busy(const SPI_TypeDef *spi);
 
 /* BR code for the fastest SCK <= min(max_hz, 18 MHz) */
 HAL_Status hal_spi_calc_br(uint32_t pclk_hz, uint32_t max_hz, uint8_t *br,

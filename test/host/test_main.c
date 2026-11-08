@@ -2,7 +2,7 @@
  * @file test_main.c
  * @brief Host-side test runner: owns the shared counters, summary, and main().
  *
- * Copyright (c) 2026 Flex HAL Project.
+ * Copyright (c) 2026 Antony Kasera
  * SPDX-License-Identifier: MIT
  *
  * Each module's tests live in test_<mod>.c as `void test_xxx(void)`. Declare
@@ -53,6 +53,7 @@ void test_brr_72mhz_115200(void);
 void test_brr_72mhz_9600(void);
 void test_brr_36mhz_115200(void);
 void test_brr_zero_baud_guarded(void);
+void test_brr_out_of_range(void);
 void test_try_read_empty(void);
 void test_try_read_byte(void);
 void test_try_read_drops_parity_bit(void);
@@ -136,7 +137,7 @@ void test_encoder_update_accumulates(void);
 /* --- capture (test_capture.c) --- */
 void test_capture_psc(void);
 void test_capture_init_registers(void);
-void test_capture_read(void);
+void test_capture_try_read(void);
 
 /* --- tim1 (test_tim1.c) --- */
 void test_tim1_dtg_values(void);
@@ -217,6 +218,7 @@ int main(void) {
   TEST_RUN(test_brr_72mhz_9600);
   TEST_RUN(test_brr_36mhz_115200);
   TEST_RUN(test_brr_zero_baud_guarded);
+  TEST_RUN(test_brr_out_of_range);
   TEST_RUN(test_try_read_empty);
   TEST_RUN(test_try_read_byte);
   TEST_RUN(test_try_read_drops_parity_bit);
@@ -291,7 +293,7 @@ int main(void) {
 
   TEST_RUN(test_capture_psc);
   TEST_RUN(test_capture_init_registers);
-  TEST_RUN(test_capture_read);
+  TEST_RUN(test_capture_try_read);
 
   TEST_RUN(test_tim1_dtg_values);
   TEST_RUN(test_tim1_dtg_rejects);

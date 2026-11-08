@@ -2,7 +2,7 @@
  * @file hal_encoder_f1.c
  * @brief STM32F1 quadrature encoder on TIM2/3/4
  *
- * Copyright (c) 2026.
+ * Copyright (c) 2026 Antony Kasera
  * SPDX-License-Identifier: MIT
  */
 

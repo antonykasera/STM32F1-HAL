@@ -8,7 +8,7 @@
  * high-to-low gap is the real timeout, so f_LSI = 40 kHz * 500 / gap_ms.
  * USART1 (PA9, 115200) prints the boot cause each time.
  *
- * Copyright (c) 2026.
+ * Copyright (c) 2026 Antony Kasera
  * SPDX-License-Identifier: MIT
  */
 

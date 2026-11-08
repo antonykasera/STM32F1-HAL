@@ -7,7 +7,7 @@
  * anywhere within one tick, so both limits are good to one tick. Once started
  * it only stops on reset.
  *
- * Copyright (c) 2026.
+ * Copyright (c) 2026 Antony Kasera
  * SPDX-License-Identifier: MIT
  */
 

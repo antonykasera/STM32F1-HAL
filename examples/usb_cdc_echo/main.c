@@ -9,7 +9,7 @@
  *
  * USB_IRQ 1 serves USB from its interrupt instead of the loop.
  *
- * Copyright (c) 2026.
+ * Copyright (c) 2026 Antony Kasera
  * SPDX-License-Identifier: MIT
  */
 

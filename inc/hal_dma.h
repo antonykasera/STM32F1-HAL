@@ -6,7 +6,7 @@
  * table): ADC1 -> 1, USART3_TX -> 2, USART1_TX -> 4, USART1_RX -> 5,
  * USART2_RX -> 6, USART2_TX -> 7, ...
  *
- * Copyright (c) 2026.
+ * Copyright (c) 2026 Antony Kasera
  * SPDX-License-Identifier: MIT
  */
 

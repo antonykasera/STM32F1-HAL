@@ -2,7 +2,7 @@
  * @file test_capture.c
  * @brief Host-side unit tests for F1 pulse measurement
  *
- * Copyright (c) 2026 Flex HAL Project.
+ * Copyright (c) 2026 Antony Kasera
  * SPDX-License-Identifier: MIT
  *
  * Register tests run on a TIM_TypeDef in host RAM with test_pwm.c's
@@ -41,19 +41,19 @@ void test_capture_init_registers(void) {
   ASSERT_EQ(t.CR1 & TIM_CR1_CEN, TIM_CR1_CEN);
 }
 
-void test_capture_read(void) {
+void test_capture_try_read(void) {
   TIM_TypeDef t = {0};
   Capture c = {&t, 1000000U};
   uint32_t period = 7U;
   uint32_t high = 7U;
 
-  ASSERT_EQ(hal_capture_read(&c, &period, &high), HAL_ERR_EMPTY);
+  ASSERT_EQ(hal_capture_try_read(&c, &period, &high), HAL_ERR_EMPTY);
   ASSERT_EQ(period, 7U);
 
   t.SR = TIM_SR_CC1IF;
   t.CCR1 = 999U;
   t.CCR2 = 249U;
-  ASSERT_EQ(hal_capture_read(&c, &period, &high), HAL_OK);
+  ASSERT_EQ(hal_capture_try_read(&c, &period, &high), HAL_OK);
   ASSERT_EQ(period, 1000U);
   ASSERT_EQ(high, 250U);
 }

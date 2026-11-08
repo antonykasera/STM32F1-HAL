@@ -11,7 +11,7 @@
  * Linux /dev/ttyACMx, macOS /dev/cu.usbmodem*, Windows 10+ COMx (usbser).
  * The serial number is the chip UID; some F103 clones read it as all zeros.
  *
- * Copyright (c) 2026.
+ * Copyright (c) 2026 Antony Kasera
  * SPDX-License-Identifier: MIT
  */
 

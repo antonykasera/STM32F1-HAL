@@ -2,7 +2,7 @@
  * @file hal_spi_calc.c
  * @brief SPI clock divider and control-register arithmetic
  *
- * Copyright (c) 2026.
+ * Copyright (c) 2026 Antony Kasera
  * SPDX-License-Identifier: MIT
  *
  * SCK = pclk / (2 << BR), BR 0..7 (RM0008).

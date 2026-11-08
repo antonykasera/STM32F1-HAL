@@ -2,7 +2,7 @@
  * @file hal_can_f1.c
  * @brief STM32F1 bxCAN driver: init, filters, polled send/receive
  *
- * Copyright (c) 2026.
+ * Copyright (c) 2026 Antony Kasera
  * SPDX-License-Identifier: MIT
  */
 

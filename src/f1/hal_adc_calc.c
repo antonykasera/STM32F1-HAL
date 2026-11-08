@@ -2,7 +2,7 @@
  * @file hal_adc_calc.c
  * @brief ADC clock and conversion arithmetic
  *
- * Copyright (c) 2026.
+ * Copyright (c) 2026 Antony Kasera
  * SPDX-License-Identifier: MIT
  *
  * Sensor figures from the STM32F103x8 datasheet: VREFINT 1.20 V, V25 1.43 V,

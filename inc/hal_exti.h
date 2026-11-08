@@ -2,7 +2,7 @@
  * @file hal_exti.h
  * @brief Public EXTI/interrupt API
  *
- * Copyright (c) 2026 Flex HAL Project.
+ * Copyright (c) 2026 Antony Kasera
  * SPDX-License-Identifier: MIT
  */
 
@@ -12,11 +12,11 @@
 #include "stm32f103xb.h"
 #include <stdint.h>
 
-typedef enum { FALLING_EDGE, RISING_EDGE } EXTI_Edge_t;
+typedef enum { EXTI_EDGE_FALLING, EXTI_EDGE_RISING } EXTI_Edge;
 
 typedef void (*exti_callback_t)(void);
 
-void hal_exti_init(const GPIO_TypeDef *port, uint8_t pin, EXTI_Edge_t edge);
+void hal_exti_init(const GPIO_TypeDef *port, uint8_t pin, EXTI_Edge edge);
 
 void hal_exti_deinit(uint8_t line);
 

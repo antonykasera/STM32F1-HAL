@@ -2,7 +2,7 @@
  * @file hal_clock_f1.c
  * @brief STM32F1 family-specific clock configuration
  *
- * Copyright (c) 2026.
+ * Copyright (c) 2026 Antony Kasera
  * SPDX-License-Identifier: MIT
  */
 
@@ -156,25 +156,5 @@ uint32_t hal_get_tick(void) { return ms_ticks; }
 void hal_delay_ms(const uint32_t delay_ms) {
   uint32_t start = ms_ticks;
   while ((ms_ticks - start) < delay_ms) {
-  }
-}
-
-void hal_gpio_init_port_clock(GPIO_TypeDef *port) {
-  if (port == GPIOA) {
-    RCC->APB2ENR |= RCC_APB2ENR_IOPAEN;
-  } else if (port == GPIOB) {
-    RCC->APB2ENR |= RCC_APB2ENR_IOPBEN;
-  } else if (port == GPIOC) {
-    RCC->APB2ENR |= RCC_APB2ENR_IOPCEN;
-  }
-}
-
-void hal_gpio_deinit_port_clock(GPIO_TypeDef *port) {
-  if (port == GPIOA) {
-    RCC->APB2ENR &= ~RCC_APB2ENR_IOPAEN;
-  } else if (port == GPIOB) {
-    RCC->APB2ENR &= ~RCC_APB2ENR_IOPBEN;
-  } else if (port == GPIOC) {
-    RCC->APB2ENR &= ~RCC_APB2ENR_IOPCEN;
   }
 }

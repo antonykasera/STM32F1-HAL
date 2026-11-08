@@ -2,7 +2,7 @@
  * @file hal_can_calc.c
  * @brief CAN bit-timing arithmetic and mailbox packing
  *
- * Copyright (c) 2026.
+ * Copyright (c) 2026 Antony Kasera
  * SPDX-License-Identifier: MIT
  *
  */

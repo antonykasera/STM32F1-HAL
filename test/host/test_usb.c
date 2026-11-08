@@ -2,7 +2,7 @@
  * @file test_usb.c
  * @brief Host-side unit tests for the USB register math, rings and requests
  *
- * Copyright (c) 2026 Flex HAL Project.
+ * Copyright (c) 2026 Antony Kasera
  * SPDX-License-Identifier: MIT
  *
  * The EPnR tests run hal_usb_calc_epr's output through a model of what the

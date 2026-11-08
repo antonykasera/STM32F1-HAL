@@ -2,7 +2,7 @@
  * @file test_reset.c
  * @brief Host-side unit tests for reset cause decoding
  *
- * Copyright (c) 2026.
+ * Copyright (c) 2026 Antony Kasera
  * SPDX-License-Identifier: MIT
  *
  * RCC_CSR reset flags: PINRSTF bit 26 .. LPWRRSTF bit 31 (RM0008 7.3.10).

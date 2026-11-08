@@ -2,7 +2,7 @@
  * @file hal_i2c_f1.c
  * @brief STM32F1 I2C master implementation (blocking, Sm + Fm)
  *
- * Copyright (c) 2026.
+ * Copyright (c) 2026 Antony Kasera
  * SPDX-License-Identifier: MIT
  *
  * Every blocking wait is bounded by the per-instance timeout in ms, so an
@@ -195,7 +195,7 @@ void hal_i2c_stop(I2C_TypeDef *i2c) { i2c->CR1 |= I2C_CR1_STOP; }
 /* transactions */
 
 HAL_Status hal_i2c_write(I2C_TypeDef *i2c, uint8_t addr, const uint8_t *buf,
-                         uint32_t len) {
+                         size_t len) {
   HAL_ASSERT(i2c_index(i2c) >= 0);
 
   HAL_Status st = hal_i2c_start(i2c);
@@ -208,7 +208,7 @@ HAL_Status hal_i2c_write(I2C_TypeDef *i2c, uint8_t addr, const uint8_t *buf,
     return st;
   }
 
-  for (uint32_t i = 0U; i < len; i++) {
+  for (size_t i = 0U; i < len; i++) {
     st = hal_i2c_write_byte(i2c, buf[i]);
     if (st != HAL_OK) {
       return st;
@@ -226,7 +226,7 @@ HAL_Status hal_i2c_write(I2C_TypeDef *i2c, uint8_t addr, const uint8_t *buf,
  * for ACK/STOP around the ADDR clear, the F1 peripheral requires the last
  * ACK/STOP to be armed before the final byte(s) are clocked in. */
 static HAL_Status i2c_read_into(I2C_TypeDef *i2c, uint8_t addr, uint8_t *buf,
-                                uint32_t len) {
+                                size_t len) {
   i2c->DR = (uint32_t)(((uint32_t)addr << 1) | I2C_READ);
   HAL_Status st = i2c_wait_sr1(i2c, I2C_SR1_ADDR);
   if (st != HAL_OK) {
@@ -268,7 +268,7 @@ static HAL_Status i2c_read_into(I2C_TypeDef *i2c, uint8_t addr, uint8_t *buf,
   (void)i2c->SR1; /* clear ADDR */
   (void)i2c->SR2;
 
-  for (uint32_t i = 0U; i < len; i++) {
+  for (size_t i = 0U; i < len; i++) {
     if (i == (len - 3U)) {
       /* wait for BTF, then NACK + STOP */
       st = i2c_wait_sr1(i2c, I2C_SR1_BTF);
@@ -303,7 +303,7 @@ static HAL_Status i2c_read_into(I2C_TypeDef *i2c, uint8_t addr, uint8_t *buf,
 }
 
 HAL_Status hal_i2c_read(I2C_TypeDef *i2c, uint8_t addr, uint8_t *buf,
-                        uint32_t len) {
+                        size_t len) {
   HAL_ASSERT(i2c_index(i2c) >= 0);
   if (len == 0U) {
     return HAL_OK;
@@ -336,12 +336,12 @@ HAL_Status hal_i2c_write_reg(I2C_TypeDef *i2c, uint8_t addr, uint8_t reg,
 }
 
 HAL_Status hal_i2c_read_reg(I2C_TypeDef *i2c, uint8_t addr, uint8_t reg,
-                            uint8_t *buf, uint32_t len) {
+                            uint8_t *buf, size_t len) {
   return hal_i2c_mem_read(i2c, addr, reg, 1U, buf, len);
 }
 
 HAL_Status hal_i2c_mem_write(I2C_TypeDef *i2c, uint8_t addr, uint16_t mem,
-                             uint8_t mem_sz, const uint8_t *buf, uint32_t len) {
+                             uint8_t mem_sz, const uint8_t *buf, size_t len) {
   HAL_ASSERT(mem_sz == 1U || mem_sz == 2U);
 
   HAL_Status st = hal_i2c_start(i2c);
@@ -364,7 +364,7 @@ HAL_Status hal_i2c_mem_write(I2C_TypeDef *i2c, uint8_t addr, uint16_t mem,
     return st;
   }
 
-  for (uint32_t i = 0U; i < len; i++) {
+  for (size_t i = 0U; i < len; i++) {
     st = hal_i2c_write_byte(i2c, buf[i]);
     if (st != HAL_OK) {
       return st;
@@ -377,7 +377,7 @@ HAL_Status hal_i2c_mem_write(I2C_TypeDef *i2c, uint8_t addr, uint16_t mem,
 }
 
 HAL_Status hal_i2c_mem_read(I2C_TypeDef *i2c, uint8_t addr, uint16_t mem,
-                            uint8_t mem_sz, uint8_t *buf, uint32_t len) {
+                            uint8_t mem_sz, uint8_t *buf, size_t len) {
   HAL_ASSERT(mem_sz == 1U || mem_sz == 2U);
   if (len == 0U) {
     return HAL_OK;
@@ -474,7 +474,7 @@ HAL_Status hal_i2c_bus_recover(I2C_TypeDef *i2c, GPIO_TypeDef *port,
 
 #define I2C_IT_ALL (I2C_CR2_ITEVTEN | I2C_CR2_ITBUFEN | I2C_CR2_ITERREN)
 
-static I2C_Xfer *i2c_xfer(I2C_TypeDef *i2c) {
+static I2C_Xfer *i2c_xfer(const I2C_TypeDef *i2c) {
   int idx = i2c_index(i2c);
   return (idx >= 0) ? &i2c_xfers[idx] : NULL;
 }
@@ -486,18 +486,27 @@ void hal_i2c_register_callback(I2C_TypeDef *i2c, i2c_callback_t cb) {
   }
 }
 
-I2C_State hal_i2c_state(I2C_TypeDef *i2c) {
+void hal_i2c_set_priority(I2C_TypeDef *i2c, uint8_t priority) {
+  int idx = i2c_index(i2c);
+  HAL_ASSERT(idx >= 0);
+  if (idx >= 0) {
+    __NVIC_SetPriority(i2c_ev_irq[idx], priority);
+    __NVIC_SetPriority(i2c_er_irq[idx], priority);
+  }
+}
+
+I2C_State hal_i2c_state(const I2C_TypeDef *i2c) {
   I2C_Xfer *x = i2c_xfer(i2c);
   return (x != NULL) ? x->state : I2C_STATE_ERROR;
 }
 
-bool hal_i2c_is_busy(I2C_TypeDef *i2c) {
+bool hal_i2c_busy(const I2C_TypeDef *i2c) {
   return hal_i2c_state(i2c) == I2C_STATE_BUSY;
 }
 
 void hal_i2c_xfer_prepare(I2C_Xfer *x, uint8_t addr, const uint8_t *ptr,
-                          uint8_t ptr_len, const uint8_t *tx, uint32_t tx_len,
-                          uint8_t *rx, uint32_t rx_len) {
+                          uint8_t ptr_len, const uint8_t *tx, size_t tx_len,
+                          uint8_t *rx, size_t rx_len) {
   HAL_ASSERT(ptr_len <= 2U);
   HAL_ASSERT((ptr != NULL) || (ptr_len == 0U));
   HAL_ASSERT((tx != NULL) || (tx_len == 0U));
@@ -512,7 +521,7 @@ void hal_i2c_xfer_prepare(I2C_Xfer *x, uint8_t addr, const uint8_t *ptr,
   x->tx_len = tx_len;
   x->rx = rx;
   x->rx_len = rx_len;
-  x->reading = ((((uint32_t)ptr_len + tx_len) == 0U) && (rx_len > 0U));
+  x->reading = ((((size_t)ptr_len + tx_len) == 0U) && (rx_len > 0U));
   x->n = 0U;
   x->step = I2C_STEP_START;
   x->result = HAL_OK;
@@ -538,7 +547,7 @@ static void clear_addr(I2C_TypeDef *i2c) {
 static void on_addr(I2C_TypeDef *i2c, I2C_Xfer *x) {
   if (!x->reading) {
     clear_addr(i2c);
-    if (((uint32_t)x->ptr_len + x->tx_len) == 0U) { /* address only: a probe */
+    if (((size_t)x->ptr_len + x->tx_len) == 0U) { /* address only: a probe */
       i2c->CR1 |= I2C_CR1_STOP;
       it_finish(i2c, x, HAL_OK);
     } else {
@@ -571,7 +580,7 @@ static void on_addr(I2C_TypeDef *i2c, I2C_Xfer *x) {
 }
 
 static void on_tx(I2C_TypeDef *i2c, I2C_Xfer *x, uint32_t sr1) {
-  uint32_t total = (uint32_t)x->ptr_len + x->tx_len;
+  size_t total = (size_t)x->ptr_len + x->tx_len;
 
   if (x->n < total) {
     if ((sr1 & I2C_SR1_TXE) != 0U) {
@@ -680,8 +689,8 @@ void hal_i2c_er_step(I2C_TypeDef *i2c, I2C_Xfer *x) {
 
 /* busy check first: a call while busy must not touch the running transfer */
 static HAL_Status it_begin(I2C_TypeDef *i2c, uint8_t addr, const uint8_t *ptr,
-                           uint8_t ptr_len, const uint8_t *tx, uint32_t tx_len,
-                           uint8_t *rx, uint32_t rx_len) {
+                           uint8_t ptr_len, const uint8_t *tx, size_t tx_len,
+                           uint8_t *rx, size_t rx_len) {
   int idx = i2c_index(i2c);
   HAL_ASSERT(idx >= 0);
   if (idx < 0) {
@@ -706,12 +715,12 @@ static HAL_Status it_begin(I2C_TypeDef *i2c, uint8_t addr, const uint8_t *ptr,
 }
 
 HAL_Status hal_i2c_write_it(I2C_TypeDef *i2c, uint8_t addr, const uint8_t *buf,
-                            uint32_t len) {
+                            size_t len) {
   return it_begin(i2c, addr, NULL, 0U, buf, len, NULL, 0U);
 }
 
 HAL_Status hal_i2c_read_it(I2C_TypeDef *i2c, uint8_t addr, uint8_t *buf,
-                           uint32_t len) {
+                           size_t len) {
   HAL_ASSERT(len > 0U); /* a zero-length read would never call back */
   if (len == 0U) {
     return HAL_ERR_PARAM;
@@ -726,20 +735,20 @@ HAL_Status hal_i2c_write_reg_it(I2C_TypeDef *i2c, uint8_t addr, uint8_t reg,
 }
 
 HAL_Status hal_i2c_read_reg_it(I2C_TypeDef *i2c, uint8_t addr, uint8_t reg,
-                               uint8_t *buf, uint32_t len) {
+                               uint8_t *buf, size_t len) {
   return hal_i2c_mem_read_it(i2c, addr, reg, 1U, buf, len);
 }
 
 HAL_Status hal_i2c_mem_write_it(I2C_TypeDef *i2c, uint8_t addr, uint16_t mem,
                                 uint8_t mem_sz, const uint8_t *buf,
-                                uint32_t len) {
+                                size_t len) {
   HAL_ASSERT((mem_sz == 1U) || (mem_sz == 2U));
   const uint8_t p[2] = {(uint8_t)(mem >> 8), (uint8_t)(mem & 0xFFU)};
   return it_begin(i2c, addr, &p[2U - mem_sz], mem_sz, buf, len, NULL, 0U);
 }
 
 HAL_Status hal_i2c_mem_read_it(I2C_TypeDef *i2c, uint8_t addr, uint16_t mem,
-                               uint8_t mem_sz, uint8_t *buf, uint32_t len) {
+                               uint8_t mem_sz, uint8_t *buf, size_t len) {
   HAL_ASSERT((mem_sz == 1U) || (mem_sz == 2U));
   HAL_ASSERT(len > 0U);
   if (len == 0U) {

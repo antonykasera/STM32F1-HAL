@@ -2,7 +2,7 @@
  * @file hal_uart.h
  * @brief UART API header file
  *
- * Copyright (c) 2026 Flex HAL Project.
+ * Copyright (c) 2026 Antony Kasera
  * SPDX-License-Identifier: MIT
  */
 
@@ -12,6 +12,7 @@
 #include "hal_error.h"
 #include "stm32f103xb.h"
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
 
 typedef enum {
@@ -28,7 +29,8 @@ typedef struct {
   UART_StopBits stop;
 } UART_Config;
 
-void hal_uart_init(USART_TypeDef *uart, const UART_Config *cfg);
+/* HAL_ERR_PARAM if the baud can't be reached from this UART's PCLK */
+HAL_Status hal_uart_init(USART_TypeDef *uart, const UART_Config *cfg);
 
 void hal_uart_deinit(USART_TypeDef *uart);
 
@@ -46,9 +48,9 @@ void hal_uart_flush(USART_TypeDef *uart);
  * HAL_ERR_BUSY while a previous one is still going out. */
 HAL_Status hal_uart_write_dma(USART_TypeDef *uart, const uint8_t *buf,
                               uint16_t len);
-bool hal_uart_tx_busy(USART_TypeDef *uart);
+bool hal_uart_tx_busy(const USART_TypeDef *uart);
 
-void hal_uart_write(USART_TypeDef *uart, const uint8_t *buf, uint32_t len);
+void hal_uart_write(USART_TypeDef *uart, const uint8_t *buf, size_t len);
 
 void hal_uart_write_string(USART_TypeDef *uart, const char *s);
 

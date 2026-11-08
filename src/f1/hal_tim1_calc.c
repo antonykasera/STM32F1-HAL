@@ -2,7 +2,7 @@
  * @file hal_tim1_calc.c
  * @brief TIM1 dead-time and break register arithmetic
  *
- * Copyright (c) 2026.
+ * Copyright (c) 2026 Antony Kasera
  * SPDX-License-Identifier: MIT
  *
  * Dead time in timer ticks (CKD = 0, RM0008 BDTR.DTG):

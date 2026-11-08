@@ -2,7 +2,7 @@
  * @file test_clock.c
  * @brief Host-side unit tests for the F1 clock math
  *
- * Copyright (c) 2026 Flex HAL Project.
+ * Copyright (c) 2026 Antony Kasera
  * SPDX-License-Identifier: MIT
 
  * Flash-latency thresholds cross-checked against RM0008 Rev 21, Flash ACR

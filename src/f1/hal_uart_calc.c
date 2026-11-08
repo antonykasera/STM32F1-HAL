@@ -2,7 +2,7 @@
  * @file hal_uart_calc.c
  * @brief UART baud-rate arithmetic
  *
- * Copyright (c) 2026.
+ * Copyright (c) 2026 Antony Kasera
  *
  * SPDX-License-Identifier: MIT
  *
@@ -16,12 +16,15 @@
 #include "hal_uart.h"
 #include <stdint.h>
 
+/* BRR below 16 (mantissa 0) or above 16 bits can't be set: 0 */
 uint16_t hal_uart_calc_brr(uint32_t pclk_hz, uint32_t baud) {
   if (baud == 0U) {
     return 0U;
   }
 
   uint32_t brr = (pclk_hz + (baud / 2U)) / baud;
-
+  if ((brr < 16U) || (brr > 0xFFFFU)) {
+    return 0U;
+  }
   return (uint16_t)brr;
 }

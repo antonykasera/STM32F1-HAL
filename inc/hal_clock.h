@@ -2,7 +2,7 @@
  * @file hal_clock.h
  * @brief Public clock configuration API
  *
- * Copyright (c) 2026 Flex HAL Project.
+ * Copyright (c) 2026 Antony Kasera
  * SPDX-License-Identifier: MIT
  */
 
@@ -67,8 +67,5 @@ static inline bool hal_tick_expired(uint32_t now, uint32_t start,
                                     uint32_t timeout_ms) {
   return (now - start) > timeout_ms;
 }
-
-void hal_gpio_init_port_clock(GPIO_TypeDef *port);
-void hal_gpio_deinit_port_clock(GPIO_TypeDef *port);
 
 #endif /* HAL_CLOCK_H */

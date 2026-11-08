@@ -2,7 +2,7 @@
  * @file test_assert.h
  * @brief Host-side unit-test harness (macros only)
  *
- * Copyright (c) 2026 Flex HAL Project.
+ * Copyright (c) 2026 Antony Kasera
  * SPDX-License-Identifier: MIT
  *
  * This header provides only the assertion + runner MACROS. The

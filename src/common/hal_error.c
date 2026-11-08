@@ -2,7 +2,7 @@
  * @file hal_error.c
  * @brief Shared error handling utilities
  *
- * Copyright (c) 2026.
+ * Copyright (c) 2026 Antony Kasera
  * SPDX-License-Identifier: MIT
  *
  */

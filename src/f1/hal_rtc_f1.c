@@ -2,7 +2,7 @@
  * @file hal_rtc_f1.c
  * @brief STM32F1 RTC and backup registers
  *
- * Copyright (c) 2026.
+ * Copyright (c) 2026 Antony Kasera
  * SPDX-License-Identifier: MIT
  */
 

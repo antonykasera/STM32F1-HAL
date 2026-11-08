@@ -2,7 +2,7 @@
  * @file hal_crc_calc.c
  * @brief Bitwise model of the CRC unit
  *
- * Copyright (c) 2026.
+ * Copyright (c) 2026 Antony Kasera
  * SPDX-License-Identifier: MIT
  */
 

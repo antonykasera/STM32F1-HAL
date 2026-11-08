@@ -2,7 +2,7 @@
  * @file hal_spi_f1.c
  * @brief STM32F1 SPI master driver
  *
- * Copyright (c) 2026.
+ * Copyright (c) 2026 Antony Kasera
  * SPDX-License-Identifier: MIT
  */
 
@@ -76,10 +76,10 @@ void hal_spi_deinit(SPI_TypeDef *spi) {
 }
 
 HAL_Status hal_spi_transfer(SPI_TypeDef *spi, const uint8_t *tx, uint8_t *rx,
-                            uint16_t len) {
+                            size_t len) {
   spi->CR2 &= ~(SPI_CR2_TXDMAEN | SPI_CR2_RXDMAEN);
 
-  for (uint32_t i = 0U; i < len; i++) {
+  for (size_t i = 0U; i < len; i++) {
     HAL_Status st = spi_wait(spi, SPI_SR_TXE, SPI_SR_TXE);
     if (st != HAL_OK) {
       return st;
@@ -135,7 +135,7 @@ HAL_Status hal_spi_transfer_dma(SPI_TypeDef *spi, const uint8_t *tx,
 }
 
 /* RX count reaching 0 means every byte came back; BSY covers the tail */
-bool hal_spi_busy(SPI_TypeDef *spi) {
+bool hal_spi_busy(const SPI_TypeDef *spi) {
   const DMA_Channel_TypeDef *rx = spi_rx_dma(spi);
 
   if ((rx->CCR & DMA_CCR_EN) == 0U) {

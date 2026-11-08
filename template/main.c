@@ -5,7 +5,7 @@
  * Shows the pattern for using flex as a library from your own project. Your app
  * owns main(), the linker script, and SystemInit(); flex provides the drivers.
  *
- * Copyright (c) 2026.
+ * Copyright (c) 2026 Antony Kasera
  * SPDX-License-Identifier: MIT
  */
 

@@ -2,7 +2,7 @@
  * @file main.c
  * @brief Cycle-counting profiler example.
  *
- * Copyright (c) 2026.
+ * Copyright (c) 2026 Antony Kasera
  * SPDX-License-Identifier: MIT
  *
  * Uses the Cortex-M3 DWT->CYCCNT free-running cycle counter to measure how many
@@ -126,14 +126,14 @@ int main(void) {
     MEASURE("gpio_pin_read", sink_b = hal_gpio_pin_read(LED_PORT, v_pin));
     MEASURE("gpio_port_write", hal_gpio_port_write(LED_PORT, 0U));
     MEASURE("gpio_port_read", sink_u16 = hal_gpio_port_read(LED_PORT));
-    MEASURE("gpio_cr_shift", sink_u8 = gpio_cr_shift(v_pin));
+    MEASURE("hal_gpio_calc_cr_shift", sink_u8 = hal_gpio_calc_cr_shift(v_pin));
 
     /* GPIO: full pin init (register RMW + encode) */
     MEASURE("gpio_pin_init", hal_gpio_pin_init(LED_PORT, v_pin, &led_cfg));
 
     /* pure encoders*/
-    MEASURE("gpio_encode_config",
-            sink_u8 = gpio_encode_config(v_mode, v_speed, v_pull));
+    MEASURE("hal_gpio_calc_config",
+            sink_u8 = hal_gpio_calc_config(v_mode, v_speed, v_pull));
 
     /* UART baud math */
     MEASURE("uart_calc_brr", sink_u16 = hal_uart_calc_brr(v_pclk, v_baud));
@@ -142,8 +142,8 @@ int main(void) {
     {
       uint16_t psc = 0U;
       uint16_t arr = 0U;
-      MEASURE("timer_solve_psc_arr",
-              hal_timer_solve_psc_arr(v_pclk, v_freq, &psc, &arr));
+      MEASURE("timer_calc_psc_arr",
+              hal_timer_calc_psc_arr(v_pclk, v_freq, &psc, &arr));
       sink_u16 = (uint16_t)(psc + arr);
     }
 

@@ -2,7 +2,7 @@
  * @file test_encoder.c
  * @brief Host-side unit tests for the F1 quadrature encoder
  *
- * Copyright (c) 2026 Flex HAL Project.
+ * Copyright (c) 2026 Antony Kasera
  * SPDX-License-Identifier: MIT
  *
  * Runs on a TIM_TypeDef in host RAM; hal_timer_base_config is the stand-in

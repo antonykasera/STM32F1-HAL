@@ -12,7 +12,7 @@
  * analyzer shows their real length (datasheet: 20-40 ms, 40-70 us per
  * half-word). st-flash write leaves the page alone; st-flash erase clears it.
  *
- * Copyright (c) 2026.
+ * Copyright (c) 2026 Antony Kasera
  * SPDX-License-Identifier: MIT
  */
 

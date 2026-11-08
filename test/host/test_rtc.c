@@ -2,7 +2,7 @@
  * @file test_rtc.c
  * @brief Host-side unit tests for the F1 RTC register sequences
  *
- * Copyright (c) 2026 Flex HAL Project.
+ * Copyright (c) 2026 Antony Kasera
  * SPDX-License-Identifier: MIT
  *
  * Runs on an RTC_TypeDef in host RAM with RTOFF preset, so the "previous

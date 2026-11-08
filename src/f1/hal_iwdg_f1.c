@@ -2,7 +2,7 @@
  * @file hal_iwdg_f1.c
  * @brief STM32F1 independent watchdog driver
  *
- * Copyright (c) 2026.
+ * Copyright (c) 2026 Antony Kasera
  * SPDX-License-Identifier: MIT
  */
 

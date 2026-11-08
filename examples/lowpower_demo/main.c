@@ -14,7 +14,7 @@
  * KEEP_DEBUG 1 keeps the ST-Link connected (and reflashing easy) through Stop
  * and Standby but leaves clocks running; set 0 to measure real current.
  *
- * Copyright (c) 2026.
+ * Copyright (c) 2026 Antony Kasera
  * SPDX-License-Identifier: MIT
  */
 

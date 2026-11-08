@@ -5,7 +5,7 @@
  * Clocked by the LSI, 30-60 kHz (40 typical, datasheet), so a requested timeout
  * really lands between 0.67x and 1.33x. Once started it only stops on reset.
  *
- * Copyright (c) 2026.
+ * Copyright (c) 2026 Antony Kasera
  * SPDX-License-Identifier: MIT
  */
 

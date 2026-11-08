@@ -2,7 +2,7 @@
  * @file test_gpio.c
  * @brief Host-side unit tests for the F1 GPIO driver
  *
- * Copyright (c) 2026 Flex HAL Project.
+ * Copyright (c) 2026 Antony Kasera
  * SPDX-License-Identifier: MIT
  *
  * The HAL takes a `GPIO_TypeDef *`, so we allocate the peripheral
@@ -23,50 +23,50 @@ static uint8_t nibble_of(const GPIO_TypeDef *g, uint8_t pin) {
 }
 
 void test_encode_output_modes(void) {
-  ASSERT_EQ(gpio_encode_config(GPIO_MODE_OUTPUT_PP, GPIO_SPEED_10_MHZ,
+  ASSERT_EQ(hal_gpio_calc_config(GPIO_MODE_OUTPUT_PP, GPIO_SPEED_10_MHZ,
                                GPIO_PULL_NONE),
             0b0001);
   ASSERT_EQ(
-      gpio_encode_config(GPIO_MODE_OUTPUT_PP, GPIO_SPEED_2_MHZ, GPIO_PULL_NONE),
+      hal_gpio_calc_config(GPIO_MODE_OUTPUT_PP, GPIO_SPEED_2_MHZ, GPIO_PULL_NONE),
       0b0010);
-  ASSERT_EQ(gpio_encode_config(GPIO_MODE_OUTPUT_PP, GPIO_SPEED_50_MHZ,
+  ASSERT_EQ(hal_gpio_calc_config(GPIO_MODE_OUTPUT_PP, GPIO_SPEED_50_MHZ,
                                GPIO_PULL_NONE),
             0b0011);
   ASSERT_EQ(
-      gpio_encode_config(GPIO_MODE_OUTPUT_OD, GPIO_SPEED_2_MHZ, GPIO_PULL_NONE),
+      hal_gpio_calc_config(GPIO_MODE_OUTPUT_OD, GPIO_SPEED_2_MHZ, GPIO_PULL_NONE),
       0b0110);
   ASSERT_EQ(
-      gpio_encode_config(GPIO_MODE_AF_PP, GPIO_SPEED_50_MHZ, GPIO_PULL_NONE),
+      hal_gpio_calc_config(GPIO_MODE_AF_PP, GPIO_SPEED_50_MHZ, GPIO_PULL_NONE),
       0b1011);
   ASSERT_EQ(
-      gpio_encode_config(GPIO_MODE_AF_OD, GPIO_SPEED_10_MHZ, GPIO_PULL_NONE),
+      hal_gpio_calc_config(GPIO_MODE_AF_OD, GPIO_SPEED_10_MHZ, GPIO_PULL_NONE),
       0b1101);
 }
 
 void test_encode_input_modes(void) {
   ASSERT_EQ(
-      gpio_encode_config(GPIO_MODE_ANALOG, GPIO_SPEED_INPUT, GPIO_PULL_NONE),
+      hal_gpio_calc_config(GPIO_MODE_ANALOG, GPIO_SPEED_INPUT, GPIO_PULL_NONE),
       0b0000);
   ASSERT_EQ(
-      gpio_encode_config(GPIO_MODE_INPUT, GPIO_SPEED_INPUT, GPIO_PULL_NONE),
+      hal_gpio_calc_config(GPIO_MODE_INPUT, GPIO_SPEED_INPUT, GPIO_PULL_NONE),
       0b0100);
   ASSERT_EQ(
-      gpio_encode_config(GPIO_MODE_INPUT_PULL, GPIO_SPEED_INPUT, GPIO_PULL_UP),
+      hal_gpio_calc_config(GPIO_MODE_INPUT_PULL, GPIO_SPEED_INPUT, GPIO_PULL_UP),
       0b1000);
-  ASSERT_EQ(gpio_encode_config(GPIO_MODE_INPUT_PULL, GPIO_SPEED_INPUT,
+  ASSERT_EQ(hal_gpio_calc_config(GPIO_MODE_INPUT_PULL, GPIO_SPEED_INPUT,
                                GPIO_PULL_DOWN),
             0b1000);
   ASSERT_EQ(
-      gpio_encode_config(GPIO_MODE_INPUT, GPIO_SPEED_50_MHZ, GPIO_PULL_NONE),
+      hal_gpio_calc_config(GPIO_MODE_INPUT, GPIO_SPEED_50_MHZ, GPIO_PULL_NONE),
       0b0100);
 }
 
 void test_cr_shift(void) {
-  ASSERT_EQ(gpio_cr_shift(0), 0);
-  ASSERT_EQ(gpio_cr_shift(7), 28);
-  ASSERT_EQ(gpio_cr_shift(8), 0);
-  ASSERT_EQ(gpio_cr_shift(13), 20);
-  ASSERT_EQ(gpio_cr_shift(15), 60 - 32);
+  ASSERT_EQ(hal_gpio_calc_cr_shift(0), 0);
+  ASSERT_EQ(hal_gpio_calc_cr_shift(7), 28);
+  ASSERT_EQ(hal_gpio_calc_cr_shift(8), 0);
+  ASSERT_EQ(hal_gpio_calc_cr_shift(13), 20);
+  ASSERT_EQ(hal_gpio_calc_cr_shift(15), 60 - 32);
 }
 
 void test_pin_init_pc13(void) {
@@ -128,27 +128,27 @@ void test_write_and_toggle(void) {
 void test_afio_sets_field(void) {
   /* PB8/PB9 is CAN_REMAP = 10, which is bit 14 of MAPR */
   ASSERT_EQ(
-      hal_afio_mapr_next(0U, AFIO_MAPR_CAN_REMAP, AFIO_MAPR_CAN_REMAP_REMAP2),
+      hal_afio_calc_mapr(0U, AFIO_MAPR_CAN_REMAP, AFIO_MAPR_CAN_REMAP_REMAP2),
       0x4000U);
   /* the old field value is replaced, not ORed: 11 -> 10 */
-  ASSERT_EQ(hal_afio_mapr_next(AFIO_MAPR_CAN_REMAP_REMAP3, AFIO_MAPR_CAN_REMAP,
+  ASSERT_EQ(hal_afio_calc_mapr(AFIO_MAPR_CAN_REMAP_REMAP3, AFIO_MAPR_CAN_REMAP,
                                AFIO_MAPR_CAN_REMAP_REMAP2),
             0x4000U);
   /* and it can go back to the default pins: 10 -> 00 */
-  ASSERT_EQ(hal_afio_mapr_next(0x4000U, AFIO_MAPR_CAN_REMAP,
+  ASSERT_EQ(hal_afio_calc_mapr(0x4000U, AFIO_MAPR_CAN_REMAP,
                                AFIO_MAPR_CAN_REMAP_REMAP1),
             0U);
 }
 
 void test_afio_keeps_other_remaps(void) {
-  ASSERT_EQ(hal_afio_mapr_next(AFIO_MAPR_I2C1_REMAP, AFIO_MAPR_CAN_REMAP,
+  ASSERT_EQ(hal_afio_calc_mapr(AFIO_MAPR_I2C1_REMAP, AFIO_MAPR_CAN_REMAP,
                                AFIO_MAPR_CAN_REMAP_REMAP2),
             AFIO_MAPR_I2C1_REMAP | 0x4000U);
 }
 
 void test_afio_never_writes_back_swj(void) {
   /* SWJ_CFG reads as undefined, so simulate every bit coming back set */
-  ASSERT_EQ(hal_afio_mapr_next(AFIO_MAPR_SWJ_CFG, AFIO_MAPR_CAN_REMAP,
+  ASSERT_EQ(hal_afio_calc_mapr(AFIO_MAPR_SWJ_CFG, AFIO_MAPR_CAN_REMAP,
                                AFIO_MAPR_CAN_REMAP_REMAP2),
             0x4000U);
 }

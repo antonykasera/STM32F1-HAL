@@ -8,7 +8,7 @@
  *   blocking ok, dma ok
  * Probe PA4 (CS), PA5 (SCK), PA7 (MOSI) with an SPI decoder, mode 0.
  *
- * Copyright (c) 2026.
+ * Copyright (c) 2026 Antony Kasera
  * SPDX-License-Identifier: MIT
  */
 

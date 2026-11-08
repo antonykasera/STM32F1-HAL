@@ -9,7 +9,7 @@
  *   moved 70 (want 70) ok, position 140
  * Swap the jumpers and every move should read -70 instead.
  *
- * Copyright (c) 2026.
+ * Copyright (c) 2026 Antony Kasera
  * SPDX-License-Identifier: MIT
  */
 

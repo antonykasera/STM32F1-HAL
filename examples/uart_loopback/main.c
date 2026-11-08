@@ -14,7 +14,7 @@
  * PB0 is high from the flush test's write until flush returns: ~87 us, ending
  * with the stop bit. A missing jumper fails everything but "empty".
  *
- * Copyright (c) 2026.
+ * Copyright (c) 2026 Antony Kasera
  * SPDX-License-Identifier: MIT
  */
 

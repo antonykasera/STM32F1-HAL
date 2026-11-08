@@ -2,7 +2,7 @@
  * @file hal_exti_f1.c
  * @brief STM32F1 EXTI implementation
  *
- * Copyright (c) 2026.
+ * Copyright (c) 2026 Antony Kasera
  * SPDX-License-Identifier: MIT
  */
 
@@ -34,7 +34,7 @@ static void exti_dispatch(uint8_t line) {
   }
 }
 
-void hal_exti_init(const GPIO_TypeDef *port, uint8_t pin, EXTI_Edge_t edge) {
+void hal_exti_init(const GPIO_TypeDef *port, uint8_t pin, EXTI_Edge edge) {
 
   uint8_t index = exti_port_index(port);
 
@@ -52,7 +52,7 @@ void hal_exti_init(const GPIO_TypeDef *port, uint8_t pin, EXTI_Edge_t edge) {
   EXTI->RTSR &= ~(1U << pin);
   EXTI->FTSR &= ~(1U << pin);
 
-  if (edge == RISING_EDGE) {
+  if (edge == EXTI_EDGE_RISING) {
     EXTI->RTSR |= (1U << pin);
   } else {
     EXTI->FTSR |= (1U << pin);

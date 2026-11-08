@@ -2,7 +2,7 @@
  * @file hal_wwdg_calc.c
  * @brief WWDG timeout and window arithmetic
  *
- * Copyright (c) 2026.
+ * Copyright (c) 2026 Antony Kasera
  * SPDX-License-Identifier: MIT
  *
  * tick = 4096 * 2^WDGTB / PCLK1; timeout = (T[5:0] + 1) ticks (RM0008).

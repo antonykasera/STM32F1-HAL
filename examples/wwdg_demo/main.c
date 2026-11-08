@@ -10,7 +10,7 @@
  * main() drives PC13 low first thing, which marks each reboot. USART1 (PA9,
  * 115200) prints the boot cause.
  *
- * Copyright (c) 2026.
+ * Copyright (c) 2026 Antony Kasera
  * SPDX-License-Identifier: MIT
  */
 

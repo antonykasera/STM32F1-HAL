@@ -2,7 +2,7 @@
  * @file hal_reset_calc.c
  * @brief Reset cause decoding
  *
- * Copyright (c) 2026.
+ * Copyright (c) 2026 Antony Kasera
  * SPDX-License-Identifier: MIT
  */
 

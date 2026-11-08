@@ -2,7 +2,7 @@
  * @file test_tim1.c
  * @brief Host-side unit tests for TIM1 dead time, BDTR and output control
  *
- * Copyright (c) 2026 Flex HAL Project.
+ * Copyright (c) 2026 Antony Kasera
  * SPDX-License-Identifier: MIT
  *
  * Values at 72 MHz (13.9 ns per tick) cross-checked against an independent

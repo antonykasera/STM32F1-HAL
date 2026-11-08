@@ -2,7 +2,7 @@
  * @file test_can.c
  * @brief Host-side unit tests for the F1 CAN timing math and frame packing
  *
- * Copyright (c) 2026 Flex HAL Project.
+ * Copyright (c) 2026 Antony Kasera
  * SPDX-License-Identifier: MIT
  *
  * Timing checks: pclk1 = brp * (1 + ts1 + ts2) * bitrate exactly, with the

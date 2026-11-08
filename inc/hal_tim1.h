@@ -10,7 +10,7 @@
  * input) every OCx and OCxN is driven to its idle level, low (OSSI = 1,
  * OISx = 0), so neither switch of a half bridge conducts.
  *
- * Copyright (c) 2026.
+ * Copyright (c) 2026 Antony Kasera
  * SPDX-License-Identifier: MIT
  */
 

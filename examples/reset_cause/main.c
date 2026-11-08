@@ -12,7 +12,7 @@
  * the others. The iwdg/wwdg columns check that several modules can ask in
  * one boot.
  *
- * Copyright (c) 2026.
+ * Copyright (c) 2026 Antony Kasera
  * SPDX-License-Identifier: MIT
  */
 

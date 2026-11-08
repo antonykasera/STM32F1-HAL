@@ -2,7 +2,7 @@
  * @file hal_error.h
  * @brief Shared error status codes + assertion hook
  *
- * Copyright (c) 2026 Flex HAL Project.
+ * Copyright (c) 2026 Antony Kasera
  * SPDX-License-Identifier: MIT
  *
  * Programmer mistakes like a bad pointer, an out of range argument go through

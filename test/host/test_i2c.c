@@ -2,7 +2,7 @@
  * @file test_i2c.c
  * @brief Host-side unit tests for the F1 I2C timing math
  *
- * Copyright (c) 2026 Flex HAL Project.
+ * Copyright (c) 2026 Antony Kasera
  * SPDX-License-Identifier: MIT
  *
  * Timing math, plus the interrupt state machine driven on an I2C_TypeDef in

@@ -2,7 +2,7 @@
  * @file hal_can.h
  * @brief bxCAN (CAN 2.0A/B) API for the single CAN1 on the F103
  *
- * Copyright (c) 2026.
+ * Copyright (c) 2026 Antony Kasera
  * SPDX-License-Identifier: MIT
  */
 
@@ -94,6 +94,8 @@ HAL_Status hal_can_calc_timing(uint32_t pclk_hz, uint32_t bitrate,
                                uint16_t sample_permille, CAN_Timing *t);
 
 uint32_t hal_can_calc_btr(const CAN_Timing *t);
+
+/* ---- internals, exposed for host tests ---- */
 
 void hal_can_frame_to_mailbox(const CAN_Frame *f, CAN_TxMailBox_TypeDef *mb);
 

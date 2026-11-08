@@ -2,7 +2,7 @@
  * @file test_uart.c
  * @brief Host-side unit tests for the F1 UART baud-rate math
  *
- * Copyright (c) 2026 Flex HAL Project.
+ * Copyright (c) 2026 Antony Kasera
  * SPDX-License-Identifier: MIT
  *
  * BRR = round(f_CK / (16 * baud)) laid out as mantissa[15:4] + frac[3:0], which
@@ -29,6 +29,12 @@ void test_brr_36mhz_115200(void) {
 
 void test_brr_zero_baud_guarded(void) {
   ASSERT_EQ(hal_uart_calc_brr(72000000U, 0U), 0U);
+}
+
+void test_brr_out_of_range(void) {
+  ASSERT_EQ(hal_uart_calc_brr(72000000U, 4500000U), 0x10U); /* pclk / 16 */
+  ASSERT_EQ(hal_uart_calc_brr(72000000U, 5000000U), 0U);    /* BRR 14 */
+  ASSERT_EQ(hal_uart_calc_brr(72000000U, 1000U), 0U);       /* BRR 72000 */
 }
 
 /* register-level tests on a USART_TypeDef in host RAM */

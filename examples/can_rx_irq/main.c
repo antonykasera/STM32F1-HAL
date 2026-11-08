@@ -8,7 +8,7 @@
  * lost=yes". With RX_IRQ 1 the interrupt moves each frame into a 16-deep RAM
  * queue as it arrives: expect "got 10/10 lost=no".
  *
- * Copyright (c) 2026.
+ * Copyright (c) 2026 Antony Kasera
  * SPDX-License-Identifier: MIT
  */
 

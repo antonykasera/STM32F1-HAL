@@ -2,7 +2,7 @@
  * @file test_adc.c
  * @brief Host-side unit tests for the F1 ADC math and conversion sequence
  *
- * Copyright (c) 2026 Flex HAL Project.
+ * Copyright (c) 2026 Antony Kasera
  * SPDX-License-Identifier: MIT
  *
  * VREFINT 1.20 V, V25 1.43 V, 4.3 mV/C: datasheet typicals.

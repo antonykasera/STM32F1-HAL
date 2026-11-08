@@ -2,7 +2,7 @@
  * @file test_iwdg.c
  * @brief Host-side unit tests for the F1 IWDG timeout math and start sequence
  *
- * Copyright (c) 2026 Flex HAL Project.
+ * Copyright (c) 2026 Antony Kasera
  * SPDX-License-Identifier: MIT
  *
  * timeout_ms = (4 << PR) * (RLR + 1) / 40 at the nominal 40 kHz LSI.

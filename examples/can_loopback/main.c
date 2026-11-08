@@ -7,7 +7,7 @@
  * report on USART1 (PA9, 115200). Probe PB9 with a CAN decoder at 500 kbit/s;
  * the ACK slot stays recessive (no other node), which loopback ignores.
  *
- * Copyright (c) 2026.
+ * Copyright (c) 2026 Antony Kasera
  * SPDX-License-Identifier: MIT
  */
 

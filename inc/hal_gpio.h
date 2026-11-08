@@ -2,7 +2,7 @@
  * @file hal_gpio.h
  * @brief Public GPIO API
  *
- * Copyright (c) 2026 Flex HAL Project.
+ * Copyright (c) 2026 Antony Kasera
  * SPDX-License-Identifier: MIT
  */
 
@@ -41,22 +41,23 @@ typedef struct {
   GPIO_Mode mode;
   GPIO_Speed speed;
   GPIO_Pull pull;
-
 } GPIO_Config;
 
-static inline volatile uint32_t *gpio_cr_reg(GPIO_TypeDef *port, uint8_t pin) {
-  return (pin < 8) ? &port->CRL : &port->CRH;
+/* CRL/CRH nibble for a pin and its bit offset in that register */
+uint8_t hal_gpio_calc_config(GPIO_Mode mode, GPIO_Speed speed, GPIO_Pull pull);
+static inline uint8_t hal_gpio_calc_cr_shift(uint8_t pin) {
+  return (uint8_t)((pin % 8U) * 4U);
 }
 
-static inline uint8_t gpio_cr_shift(uint8_t pin) { return (pin % 8) * 4; }
-
-uint8_t gpio_encode_config(GPIO_Mode mode, GPIO_Speed speed, GPIO_Pull pull);
+void hal_gpio_init_port_clock(GPIO_TypeDef *port);
+void hal_gpio_deinit_port_clock(GPIO_TypeDef *port);
 
 void hal_gpio_pin_init(GPIO_TypeDef *port, uint8_t pin, const GPIO_Config *cfg);
 void hal_gpio_pin_deinit(GPIO_TypeDef *port, uint8_t pin);
 
 void hal_gpio_pin_lock(GPIO_TypeDef *port, uint8_t pin);
-uint32_t hal_afio_mapr_next(uint32_t mapr, uint32_t field_mask,
+
+uint32_t hal_afio_calc_mapr(uint32_t mapr, uint32_t field_mask,
                             uint32_t field_value);
 /* AFIO clock: only for AFIO registers (remap, EXTI line select), and both
  * of those enable it; default-mapped alternate functions work without it */
@@ -65,10 +66,11 @@ void hal_afio_remap(uint32_t field_mask, uint32_t field_value);
 
 static inline void hal_gpio_port_write(GPIO_TypeDef *port, uint16_t mask) {
   port->ODR = mask;
-};
+}
+
 static inline uint16_t hal_gpio_port_read(GPIO_TypeDef *port) {
   return (uint16_t)port->IDR;
-};
+}
 
 static inline void hal_gpio_pin_write(GPIO_TypeDef *port, uint8_t pin,
                                       bool level) {
@@ -77,13 +79,14 @@ static inline void hal_gpio_pin_write(GPIO_TypeDef *port, uint8_t pin,
   } else {
     port->BRR = (1U << pin);
   }
-};
+}
+
 static inline bool hal_gpio_pin_read(GPIO_TypeDef *port, uint8_t pin) {
   return (port->IDR & (1U << pin)) ? true : false;
-};
+}
 
 static inline void hal_gpio_pin_toggle(GPIO_TypeDef *port, uint8_t pin) {
   port->BSRR = ((port->ODR & (1U << pin)) ? (1U << (pin + 16)) : (1U << pin));
-};
+}
 
 #endif /* HAL_GPIO_H */

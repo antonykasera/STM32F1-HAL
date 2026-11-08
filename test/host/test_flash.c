@@ -2,7 +2,7 @@
  * @file test_flash.c
  * @brief Host-side unit tests for the F1 flash erase/program sequences
  *
- * Copyright (c) 2026 Flex HAL Project.
+ * Copyright (c) 2026 Antony Kasera
  * SPDX-License-Identifier: MIT
  *
  * A FLASH_TypeDef in host RAM never goes BSY, and a RAM buffer stands in for

@@ -2,7 +2,7 @@
  * @file test_crc.c
  * @brief Host-side unit tests for the CRC model and register sequence
  *
- * Copyright (c) 2026 Flex HAL Project.
+ * Copyright (c) 2026 Antony Kasera
  * SPDX-License-Identifier: MIT
  *
  * Vectors cross-checked in Python against zlib on bit-reversed words.

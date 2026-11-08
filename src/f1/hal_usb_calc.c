@@ -2,7 +2,7 @@
  * @file hal_usb_calc.c
  * @brief USB endpoint register math, packet buffer sizes, byte rings
  *
- * Copyright (c) 2026.
+ * Copyright (c) 2026 Antony Kasera
  * SPDX-License-Identifier: MIT
  *
  * EPnR mixes three bit kinds (RM0008 23.5.2): rw fields, toggle fields (a 1

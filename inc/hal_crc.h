@@ -5,7 +5,7 @@
  * Starts at 0xFFFFFFFF, shifts MSB first, no reflection and no final XOR, so
  * it does NOT match zlib's crc32(). The word 0x12345678 alone gives 0xDF8A8A2B.
  *
- * Copyright (c) 2026.
+ * Copyright (c) 2026 Antony Kasera
  * SPDX-License-Identifier: MIT
  */
 

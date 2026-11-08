@@ -2,7 +2,7 @@
  * @file hal_gpio_f1.c
  * @brief STM32F1 GPIO implementation
  *
- * Copyright (c) 2026.
+ * Copyright (c) 2026 Antony Kasera
  * SPDX-License-Identifier: MIT
  */
 
@@ -37,7 +37,11 @@ static bool gpio_mode_is_output(GPIO_Mode mode) {
          mode == GPIO_MODE_AF_PP || mode == GPIO_MODE_AF_OD;
 }
 
-uint8_t gpio_encode_config(GPIO_Mode mode, GPIO_Speed speed, GPIO_Pull pull) {
+static volatile uint32_t *gpio_cr_reg(GPIO_TypeDef *port, uint8_t pin) {
+  return (pin < 8U) ? &port->CRL : &port->CRH;
+}
+
+uint8_t hal_gpio_calc_config(GPIO_Mode mode, GPIO_Speed speed, GPIO_Pull pull) {
   (void)pull;
   uint8_t cnf = gpio_mode_cnf(mode);
   uint8_t mode_bits = gpio_mode_is_output(mode) ? (uint8_t)speed : 0u;
@@ -48,8 +52,8 @@ void hal_gpio_pin_init(GPIO_TypeDef *port, uint8_t pin,
                        const GPIO_Config *cfg) {
   HAL_ASSERT(pin < 16U);
   volatile uint32_t *cr = gpio_cr_reg(port, pin);
-  uint8_t shift = gpio_cr_shift(pin);
-  uint8_t nibble = gpio_encode_config(cfg->mode, cfg->speed, cfg->pull);
+  uint8_t shift = hal_gpio_calc_cr_shift(pin);
+  uint8_t nibble = hal_gpio_calc_config(cfg->mode, cfg->speed, cfg->pull);
 
   *cr = (*cr & ~(0xFU << shift)) | ((uint32_t)nibble << shift);
 
@@ -65,7 +69,7 @@ void hal_gpio_pin_deinit(GPIO_TypeDef *port, uint8_t pin) {
   HAL_ASSERT(pin < 16U);
 
   volatile uint32_t *cr = gpio_cr_reg(port, pin);
-  uint8_t shift = gpio_cr_shift(pin);
+  uint8_t shift = hal_gpio_calc_cr_shift(pin);
 
   *cr = (*cr & ~(0xFU << shift)) | ((uint32_t)0b0100U << shift);
 
@@ -88,7 +92,7 @@ void hal_gpio_pin_lock(GPIO_TypeDef *port, uint8_t pin) {
 /* New MAPR value with one remap field changed. SWJ_CFG is write-only and reads
  * as undefined, so writing it back could disable SWD (RM0008 AFIO_MAPR). It is
  * always cleared here instead, which writes 000: the reset state, SWD on. */
-uint32_t hal_afio_mapr_next(uint32_t mapr, uint32_t field_mask,
+uint32_t hal_afio_calc_mapr(uint32_t mapr, uint32_t field_mask,
                             uint32_t field_value) {
   return (mapr & ~(field_mask | AFIO_MAPR_SWJ_CFG)) | field_value;
 }
@@ -100,5 +104,25 @@ void hal_afio_remap(uint32_t field_mask, uint32_t field_value) {
   HAL_ASSERT((field_value & ~field_mask) == 0U);
 
   hal_afio_enable();
-  AFIO->MAPR = hal_afio_mapr_next(AFIO->MAPR, field_mask, field_value);
+  AFIO->MAPR = hal_afio_calc_mapr(AFIO->MAPR, field_mask, field_value);
+}
+
+void hal_gpio_init_port_clock(GPIO_TypeDef *port) {
+  if (port == GPIOA) {
+    RCC->APB2ENR |= RCC_APB2ENR_IOPAEN;
+  } else if (port == GPIOB) {
+    RCC->APB2ENR |= RCC_APB2ENR_IOPBEN;
+  } else if (port == GPIOC) {
+    RCC->APB2ENR |= RCC_APB2ENR_IOPCEN;
+  }
+}
+
+void hal_gpio_deinit_port_clock(GPIO_TypeDef *port) {
+  if (port == GPIOA) {
+    RCC->APB2ENR &= ~RCC_APB2ENR_IOPAEN;
+  } else if (port == GPIOB) {
+    RCC->APB2ENR &= ~RCC_APB2ENR_IOPBEN;
+  } else if (port == GPIOC) {
+    RCC->APB2ENR &= ~RCC_APB2ENR_IOPCEN;
+  }
 }

@@ -2,7 +2,7 @@
  * @file hal_crc_f1.c
  * @brief STM32F1 CRC unit driver
  *
- * Copyright (c) 2026.
+ * Copyright (c) 2026 Antony Kasera
  * SPDX-License-Identifier: MIT
  */
 

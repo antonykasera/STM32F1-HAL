@@ -2,7 +2,7 @@
  * @file main.c
  * @brief UART example "Hello World!"
  *
- * Copyright (c) 2026.
+ * Copyright (c) 2026 Antony Kasera
  * SPDX-License-Identifier: MIT
  */
 

@@ -2,7 +2,7 @@
  * @file test_error.c
  * @brief Host-side unit tests for hal_error status strings
  *
- * Copyright (c) 2026 Flex HAL Project.
+ * Copyright (c) 2026 Antony Kasera
  * SPDX-License-Identifier: MIT
  *
  */

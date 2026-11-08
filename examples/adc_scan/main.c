@@ -8,7 +8,7 @@
  *   pa0=3235mV pa1=0mV vdda=3235mV temp=23.0C
  * Move jumpers between GND and 3V3 on PA0/PA1 and watch both follow.
  *
- * Copyright (c) 2026.
+ * Copyright (c) 2026 Antony Kasera
  * SPDX-License-Identifier: MIT
  */
 

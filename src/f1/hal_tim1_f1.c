@@ -2,7 +2,7 @@
  * @file hal_tim1_f1.c
  * @brief STM32F1 TIM1 advanced PWM driver
  *
- * Copyright (c) 2026.
+ * Copyright (c) 2026 Antony Kasera
  * SPDX-License-Identifier: MIT
  */
 
@@ -26,7 +26,7 @@ HAL_Status hal_tim1_init(TIM_TypeDef *tim, const TIM1_Config *cfg) {
 
   uint16_t psc = 0U;
   uint16_t arr = 0U;
-  HAL_Status st = hal_timer_solve_psc_arr(clk, cfg->freq_hz, &psc, &arr);
+  HAL_Status st = hal_timer_calc_psc_arr(clk, cfg->freq_hz, &psc, &arr);
   HAL_ASSERT(st == HAL_OK);
   if (st != HAL_OK) {
     return st;

@@ -8,7 +8,7 @@
  * analyzer PC13 toggles all through the PA9 burst; a blocking write would
  * leave it still.
  *
- * Copyright (c) 2026.
+ * Copyright (c) 2026 Antony Kasera
  * SPDX-License-Identifier: MIT
  */
 

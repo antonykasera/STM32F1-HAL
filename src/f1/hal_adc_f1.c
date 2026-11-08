@@ -2,7 +2,7 @@
  * @file hal_adc_f1.c
  * @brief STM32F1 ADC driver: single conversions and DMA scans, regular group
  *
- * Copyright (c) 2026.
+ * Copyright (c) 2026 Antony Kasera
  * SPDX-License-Identifier: MIT
  */
 

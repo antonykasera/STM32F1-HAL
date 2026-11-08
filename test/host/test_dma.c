@@ -2,7 +2,7 @@
  * @file test_dma.c
  * @brief Host-side unit tests for the F1 DMA register arithmetic
  *
- * Copyright (c) 2026 Flex HAL Project.
+ * Copyright (c) 2026 Antony Kasera
  * SPDX-License-Identifier: MIT
  *
  * CCR bits (RM0008): DIR 4, CIRC 5, PINC 6, MINC 7, PSIZE 9:8, MSIZE 11:10,
