@@ -22,7 +22,7 @@ Blue Pill, mostly with a logic analyzer; dates are the last check.
 | EXTI   | —    | 2026-07 (button) | — |
 | Timer  | yes  | 2026-11-07 (basic_timer) | — |
 | PWM    | yes  | 2026-11-08 (init split, 1 kHz by capture, 5 MHz = 5.14 MHz as solved, stop mid-pulse goes low) | — |
-| UART   | yes  | 2026-11-08 (TX, `write_dma`) | `try_read` / `flush` (uart_echo) |
+| UART   | yes  | 2026-11-08 (TX, `write_dma`, uart_loopback: `try_read`, `flush`, overrun) | uart_echo with a PC |
 | I2C    | yes  | 2026-11-08 (blocking + interrupt, i2c_it_selftest 7/7) | unplugged sensor |
 | CAN    | yes  | 2026-11-08 (loopback TX + RX, RX interrupt: can_rx_irq) | real bus |
 | IWDG   | yes  | 2026-11-08 (iwdg_demo) | — |
@@ -116,6 +116,7 @@ flex/
 │   ├── pwm_led/
 │   ├── uart_hello_world/
 │   ├── uart_echo/
+│   ├── uart_loopback/
 │   ├── cycle_profile/
 │   ├── i2c_scan/
 │   ├── i2c_as5600/
