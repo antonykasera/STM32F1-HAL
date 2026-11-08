@@ -175,6 +175,7 @@ TEST_SRCS = $(wildcard test/host/*.c) \
             src/f1/hal_capture_f1.c \
             src/f1/hal_tim1_calc.c \
             src/f1/hal_tim1_f1.c \
+            src/f1/hal_rtc_f1.c \
             $(wildcard src/common/*.c)
 
 host-test:

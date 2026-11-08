@@ -29,7 +29,9 @@ Blue Pill, mostly with a logic analyzer; dates are the last check.
 | SPI    | yes  | 2026-11-08 (loopback, blocking + DMA) | — |
 | Encoder | yes | 2026-11-08 (encoder_selftest) | real encoder |
 | Capture | yes | 2026-11-08 (capture_selftest) | — |
-| TIM1   | yes  | 2026-11-08 (1 us dead time, break to low) | re-arm after break |
+| TIM1   | yes  | 2026-11-08 (1 us dead time, break to low, re-arm) | — |
+| RTC    | yes  | — | lowpower_demo |
+| PWR    | —    | — | lowpower_demo (Stop, Standby) |
 | AFIO remap | yes | 2026-11-08 (CAN on PB8/PB9) | — |
 
 ## Project Structure
@@ -52,6 +54,8 @@ flex/
 │   ├── hal_encoder.h
 │   ├── hal_capture.h
 │   ├── hal_tim1.h
+│   ├── hal_rtc.h
+│   ├── hal_pwr.h
 │   └── hal_clock.h
 ├── src/
 │   ├── f1/
@@ -79,7 +83,9 @@ flex/
 │   │   ├── hal_encoder_f1.c
 │   │   ├── hal_capture_f1.c
 │   │   ├── hal_tim1_f1.c
-│   │   └── hal_tim1_calc.c
+│   │   ├── hal_tim1_calc.c
+│   │   ├── hal_rtc_f1.c
+│   │   └── hal_pwr_f1.c
 │   └── common/
 │       └── hal_error.c
 ├── cmsis/
@@ -105,7 +111,8 @@ flex/
 │   ├── spi_loopback/
 │   ├── encoder_selftest/
 │   ├── capture_selftest/
-│   └── tim1_deadtime/
+│   ├── tim1_deadtime/
+│   └── lowpower_demo/
 ├── test/
 │   └── host/
 │       ├── test_assert.h
@@ -124,6 +131,7 @@ flex/
 │       ├── test_encoder.c
 │       ├── test_capture.c
 │       ├── test_tim1.c
+│       ├── test_rtc.c
 │       └── test_error.c
 ├── template/
 ├── Makefile

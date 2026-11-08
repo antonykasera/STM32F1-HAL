@@ -139,6 +139,11 @@ void test_tim1_bdtr(void);
 void test_tim1_channel_complementary(void);
 void test_tim1_start_stop_trip(void);
 
+/* --- rtc (test_rtc.c) --- */
+void test_rtc_set_get(void);
+void test_rtc_alarm_at(void);
+void test_rtc_alarm_fired_once(void);
+
 /* --- error (test_error.c) --- */
 void test_status_str_known(void);
 void test_status_str_unknown(void);
@@ -248,6 +253,10 @@ int main(void) {
   TEST_RUN(test_tim1_bdtr);
   TEST_RUN(test_tim1_channel_complementary);
   TEST_RUN(test_tim1_start_stop_trip);
+
+  TEST_RUN(test_rtc_set_get);
+  TEST_RUN(test_rtc_alarm_at);
+  TEST_RUN(test_rtc_alarm_fired_once);
 
   TEST_RUN(test_status_str_known);
   TEST_RUN(test_status_str_unknown);
