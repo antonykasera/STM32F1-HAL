@@ -4,9 +4,10 @@
  *
  * Kicks off hal_i2c_read_reg_it and returns immediately; the completion
  * callback fires from the I2C ISR with the result. The superloop toggles PC13
- * the whole time to show the CPU is NOT blocked during the transfer.
+ * while it waits to show the CPU is NOT blocked during the transfer, and gives
+ * up after READ_TIMEOUT_MS with hal_i2c_abort_it.
  *
- *   S · AW:36 · DW:0E · Sr · AR:36 · DR · DR · N · P
+ *   S · AW:36 · DW:0C · Sr · AR:36 · DR · DR(N) · P
  *
  * Wiring: SCL=PB6, SDA=PB7, pull-ups to 3.3V. UART TX on PA9.
  *
@@ -22,7 +23,7 @@
 #include <stdint.h>
 
 #define AS5600_ADDR 0x36U
-#define AS5600_RAW_ANGLE 0x0EU
+#define AS5600_RAW_ANGLE 0x0CU /* 0x0C high (11:8), 0x0D low */
 
 #define I2C_PORT GPIOB
 #define I2C_SCL 6U
@@ -31,6 +32,7 @@
 #define UART_PORT GPIOA
 #define LED_PORT GPIOC
 #define LED_PIN 13U
+#define READ_TIMEOUT_MS 10U
 
 static volatile uint8_t g_raw[2];
 static volatile bool g_done;
@@ -63,40 +65,45 @@ int main(void) {
   hal_sysclock_init(&CLOCK_CONFIG_72MHZ_HSE);
   hal_systick_init();
 
+  /* UART enabled before PA9 becomes AF, so TX starts idle-high */
   GPIO_Config tx_cfg = {GPIO_MODE_AF_PP, GPIO_SPEED_50_MHZ, GPIO_PULL_NONE};
-  hal_gpio_init_port_clock(UART_PORT);
-  hal_gpio_pin_init(UART_PORT, UART_TX, &tx_cfg);
-  hal_afio_enable();
-
   UART_Config uart_cfg = {115200, UART_PARITY_NONE, UART_STOP_1};
+  hal_gpio_init_port_clock(UART_PORT);
+  hal_afio_enable();
   hal_uart_init(USART1, &uart_cfg);
+  hal_gpio_pin_init(UART_PORT, UART_TX, &tx_cfg);
 
   GPIO_Config led_cfg = {GPIO_MODE_OUTPUT_PP, GPIO_SPEED_2_MHZ, GPIO_PULL_NONE};
   hal_gpio_init_port_clock(LED_PORT);
   hal_gpio_pin_init(LED_PORT, LED_PIN, &led_cfg);
 
-  GPIO_Config i2c_cfg = {GPIO_MODE_AF_OD, GPIO_SPEED_50_MHZ, GPIO_PULL_NONE};
-  hal_gpio_init_port_clock(I2C_PORT);
-  hal_gpio_pin_init(I2C_PORT, I2C_SCL, &i2c_cfg);
-  hal_gpio_pin_init(I2C_PORT, I2C_SDA, &i2c_cfg);
-
+  /* a reset mid-transfer can leave the sensor holding SDA low: clock it free
+   * (this also runs hal_i2c_init) */
   I2C_Config cfg = {I2C_SPEED_STANDARD, 10U};
-  hal_i2c_init(I2C1, &cfg);
+  hal_gpio_init_port_clock(I2C_PORT);
+  (void)hal_i2c_bus_recover(I2C1, I2C_PORT, I2C_SCL, I2C_SDA, &cfg);
   hal_i2c_register_callback(I2C1, on_i2c_done);
 
   while (1) {
     g_done = false;
-    if (hal_i2c_read_reg_it(I2C1, AS5600_ADDR, AS5600_RAW_ANGLE,
-                            (uint8_t *)g_raw, 2U) != HAL_OK) {
-      hal_uart_write_string(USART1, "start error\r\n");
+    HAL_Status st = hal_i2c_read_reg_it(I2C1, AS5600_ADDR, AS5600_RAW_ANGLE,
+                                        (uint8_t *)g_raw, 2U);
+    if (st != HAL_OK) {
+      hal_uart_write_string(USART1, "start error: ");
+      hal_uart_write_string(USART1, hal_status_str(st));
+      hal_uart_write_string(USART1, "\r\n");
+      (void)hal_i2c_bus_recover(I2C1, I2C_PORT, I2C_SCL, I2C_SDA, &cfg);
       hal_delay_ms(200U);
       continue;
     }
 
-    /* CPU is free while the transfer runs: keep toggling the
-     * LED. */
+    /* CPU is free while the transfer runs */
+    uint32_t start = hal_get_tick();
     while (!g_done) {
       hal_gpio_pin_toggle(LED_PORT, LED_PIN);
+      if (hal_tick_expired(hal_get_tick(), start, READ_TIMEOUT_MS)) {
+        hal_i2c_abort_it(I2C1); /* calls back with HAL_ERR_TIMEOUT */
+      }
     }
 
     if (g_result == HAL_OK) {

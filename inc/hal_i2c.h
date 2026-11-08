@@ -97,4 +97,44 @@ HAL_Status hal_i2c_mem_write_it(I2C_TypeDef *i2c, uint8_t addr, uint16_t mem,
 HAL_Status hal_i2c_mem_read_it(I2C_TypeDef *i2c, uint8_t addr, uint16_t mem,
                                uint8_t mem_sz, uint8_t *buf, uint32_t len);
 
+/* give up on a running *_it transfer (e.g. after your own timeout): STOP, then
+ * the callback with HAL_ERR_TIMEOUT. A slave still holding SCL keeps the bus
+ * busy: hal_i2c_bus_recover() then. */
+void hal_i2c_abort_it(I2C_TypeDef *i2c);
+
+/* ---- interrupt state machine internals, exposed for host tests ---- */
+
+typedef enum {
+  I2C_STEP_IDLE,
+  I2C_STEP_START,   /* waiting for SB */
+  I2C_STEP_ADDR,    /* address sent, waiting for ADDR */
+  I2C_STEP_TX,      /* pointer bytes, then tx */
+  I2C_STEP_RESTART, /* repeated START requested: only SB counts */
+  I2C_STEP_RX,
+} I2C_Step;
+
+/* one transfer: write ptr then tx, repeated START, read rx (either half may
+ * be empty). tx and rx must stay valid until the callback. */
+typedef struct {
+  volatile I2C_State state;
+  I2C_Step step;
+  bool reading;
+  uint8_t addr; /* 7-bit */
+  uint8_t ptr[2];
+  uint8_t ptr_len;
+  const uint8_t *tx;
+  uint32_t tx_len;
+  uint8_t *rx;
+  uint32_t rx_len;
+  uint32_t n; /* bytes done in the current direction */
+  HAL_Status result;
+  i2c_callback_t cb;
+} I2C_Xfer;
+
+void hal_i2c_xfer_prepare(I2C_Xfer *x, uint8_t addr, const uint8_t *ptr,
+                          uint8_t ptr_len, const uint8_t *tx, uint32_t tx_len,
+                          uint8_t *rx, uint32_t rx_len);
+void hal_i2c_ev_step(I2C_TypeDef *i2c, I2C_Xfer *x);
+void hal_i2c_er_step(I2C_TypeDef *i2c, I2C_Xfer *x);
+
 #endif /* HAL_I2C_H */

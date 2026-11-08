@@ -75,6 +75,13 @@ void test_i2c_ccr_standard(void);
 void test_i2c_ccr_fast(void);
 void test_i2c_trise_standard(void);
 void test_i2c_trise_fast(void);
+void test_i2c_it_read_reg_two_bytes(void);
+void test_i2c_it_read_one_byte(void);
+void test_i2c_it_read_three_bytes(void);
+void test_i2c_it_read_five_bytes(void);
+void test_i2c_it_write_ptr_then_data(void);
+void test_i2c_it_probe(void);
+void test_i2c_it_errors(void);
 
 /* --- can (test_can.c) --- */
 void test_can_timing_common_rates(void);
@@ -226,6 +233,13 @@ int main(void) {
   TEST_RUN(test_i2c_ccr_fast);
   TEST_RUN(test_i2c_trise_standard);
   TEST_RUN(test_i2c_trise_fast);
+  TEST_RUN(test_i2c_it_read_reg_two_bytes);
+  TEST_RUN(test_i2c_it_read_one_byte);
+  TEST_RUN(test_i2c_it_read_three_bytes);
+  TEST_RUN(test_i2c_it_read_five_bytes);
+  TEST_RUN(test_i2c_it_write_ptr_then_data);
+  TEST_RUN(test_i2c_it_probe);
+  TEST_RUN(test_i2c_it_errors);
 
   TEST_RUN(test_can_timing_common_rates);
   TEST_RUN(test_can_timing_tie_prefers_more_tq);

@@ -26,33 +26,7 @@
 
 static uint32_t i2c_timeouts[I2C_COUNT];
 
-/* interrupt-driven transfer state */
-
-/* phase within a transfer that has a register/memory pointer write followed by
- * a repeated START and a read (read_reg_it / mem_read_it). */
-typedef enum {
-  I2C_PHASE_TX,         /* plain write, or writing the pointer bytes */
-  I2C_PHASE_TX_THEN_RX, /* pointer write in progress, will repeated-START to
-                           read */
-  I2C_PHASE_RX,         /* reading data bytes */
-} I2C_Phase;
-
-typedef struct {
-  volatile I2C_State state;
-  uint8_t addr; /* 7-bit */
-  I2C_Phase phase;
-  const uint8_t *tx; /* source for writes / pointer bytes */
-  uint8_t *rx;       /* destination for reads */
-  uint32_t len;      /* remaining data length */
-  uint32_t idx;      /* index into the data buffer */
-  uint8_t ptr[2];    /* register/memory pointer bytes (for *_reg/_mem reads) */
-  uint8_t ptr_len;   /* number of pointer bytes (0, 1, or 2) */
-  uint8_t ptr_idx;   /* pointer bytes sent so far */
-  HAL_Status result;
-  i2c_callback_t cb;
-} i2c_xfer_t;
-
-static i2c_xfer_t i2c_xfers[I2C_COUNT];
+static I2C_Xfer i2c_xfers[I2C_COUNT]; /* *_it transfer, one per instance */
 
 static int i2c_index(const I2C_TypeDef *i2c) {
   if (i2c == I2C1) {
@@ -101,6 +75,7 @@ HAL_Status hal_i2c_init(I2C_TypeDef *i2c, const I2C_Config *cfg) {
 
   i2c_timeouts[idx] = cfg->timeout_ms;
   i2c_xfers[idx].state = I2C_STATE_READY;
+  i2c_xfers[idx].step = I2C_STEP_IDLE;
 
   if (i2c == I2C1) {
     RCC->APB1ENR |= RCC_APB1ENR_I2C1EN;
@@ -453,12 +428,12 @@ HAL_Status hal_i2c_bus_recover(I2C_TypeDef *i2c, GPIO_TypeDef *port,
 
   i2c->CR1 &= ~I2C_CR1_PE; /* release the peripheral's hold on the pins */
 
+  /* released (high) before they become outputs, or SCL glitches low */
+  hal_gpio_pin_write(port, scl, 1U);
+  hal_gpio_pin_write(port, sda, 1U);
   GPIO_Config od = {GPIO_MODE_OUTPUT_OD, GPIO_SPEED_2_MHZ, GPIO_PULL_NONE};
   hal_gpio_pin_init(port, scl, &od);
   hal_gpio_pin_init(port, sda, &od);
-
-  hal_gpio_pin_write(port, sda,
-                     1U); /* release SDA (open-drain -> pulled high) */
 
   /* up to 9 clocks to flush a stuck slave that is mid-byte */
   for (uint32_t i = 0U; i < 9U; i++) {
@@ -490,22 +465,29 @@ HAL_Status hal_i2c_bus_recover(I2C_TypeDef *i2c, GPIO_TypeDef *port,
   return hal_i2c_init(i2c, cfg);
 }
 
-/* interrupt-driven transfers */
+/* interrupt-driven transfers
+ *
+ * Reception ends with the RM0008 BTF sequences (N=1, N=2 with POS, N>=3 from
+ * N-2 on): SCL is held while BTF is pending, so a late ISR stretches the bus
+ * instead of losing or adding bytes. ITBUFEN is on only while a TXE/RXNE per
+ * byte is wanted. */
 
-static i2c_xfer_t *i2c_xfer(I2C_TypeDef *i2c) {
+#define I2C_IT_ALL (I2C_CR2_ITEVTEN | I2C_CR2_ITBUFEN | I2C_CR2_ITERREN)
+
+static I2C_Xfer *i2c_xfer(I2C_TypeDef *i2c) {
   int idx = i2c_index(i2c);
   return (idx >= 0) ? &i2c_xfers[idx] : NULL;
 }
 
 void hal_i2c_register_callback(I2C_TypeDef *i2c, i2c_callback_t cb) {
-  i2c_xfer_t *x = i2c_xfer(i2c);
+  I2C_Xfer *x = i2c_xfer(i2c);
   if (x != NULL) {
     x->cb = cb;
   }
 }
 
 I2C_State hal_i2c_state(I2C_TypeDef *i2c) {
-  i2c_xfer_t *x = i2c_xfer(i2c);
+  I2C_Xfer *x = i2c_xfer(i2c);
   return (x != NULL) ? x->state : I2C_STATE_ERROR;
 }
 
@@ -513,147 +495,34 @@ bool hal_i2c_is_busy(I2C_TypeDef *i2c) {
   return hal_i2c_state(i2c) == I2C_STATE_BUSY;
 }
 
-/* enable EV+ER interrupts and kick off a transfer (START issued here; the ISR
- * carries it to completion). */
-static HAL_Status i2c_begin_it(I2C_TypeDef *i2c) {
-  int idx = i2c_index(i2c);
-  HAL_ASSERT(idx >= 0);
-  if (idx < 0) {
-    return HAL_ERR_UNSUPPORTED;
-  }
-  if (i2c_xfers[idx].state == I2C_STATE_BUSY) {
-    return HAL_ERR_BUSY;
-  }
+void hal_i2c_xfer_prepare(I2C_Xfer *x, uint8_t addr, const uint8_t *ptr,
+                          uint8_t ptr_len, const uint8_t *tx, uint32_t tx_len,
+                          uint8_t *rx, uint32_t rx_len) {
+  HAL_ASSERT(ptr_len <= 2U);
+  HAL_ASSERT((ptr != NULL) || (ptr_len == 0U));
+  HAL_ASSERT((tx != NULL) || (tx_len == 0U));
+  HAL_ASSERT((rx != NULL) || (rx_len == 0U));
 
-  HAL_Status st = i2c_wait_not_busy(i2c);
-  if (st != HAL_OK) {
-    return st;
-  }
-
-  i2c_xfers[idx].state = I2C_STATE_BUSY;
-  i2c_xfers[idx].result = HAL_OK;
-
-  __NVIC_EnableIRQ(i2c_ev_irq[idx]);
-  __NVIC_EnableIRQ(i2c_er_irq[idx]);
-
-  i2c->CR2 |= (I2C_CR2_ITEVTEN | I2C_CR2_ITBUFEN | I2C_CR2_ITERREN);
-  i2c->CR1 |= I2C_CR1_ACK;
-  i2c->CR1 |= I2C_CR1_START; /* SB event -> ISR takes over */
-
-  return HAL_OK;
-}
-
-HAL_Status hal_i2c_write_it(I2C_TypeDef *i2c, uint8_t addr, const uint8_t *buf,
-                            uint32_t len) {
-  i2c_xfer_t *x = i2c_xfer(i2c);
-  HAL_ASSERT(x != NULL);
-  if (x == NULL) {
-    return HAL_ERR_UNSUPPORTED;
-  }
   x->addr = addr;
-  x->phase = I2C_PHASE_TX;
-  x->tx = buf;
-  x->rx = NULL;
-  x->len = len;
-  x->idx = 0U;
-  x->ptr_len = 0U;
-  x->ptr_idx = 0U;
-  return i2c_begin_it(i2c);
-}
-
-HAL_Status hal_i2c_read_it(I2C_TypeDef *i2c, uint8_t addr, uint8_t *buf,
-                           uint32_t len) {
-  i2c_xfer_t *x = i2c_xfer(i2c);
-  HAL_ASSERT(x != NULL);
-  if (x == NULL) {
-    return HAL_ERR_UNSUPPORTED;
+  for (uint8_t i = 0U; i < ptr_len; i++) {
+    x->ptr[i] = ptr[i]; /* copied: the caller's may be a local */
   }
-  x->addr = addr;
-  x->phase = I2C_PHASE_RX;
-  x->tx = NULL;
-  x->rx = buf;
-  x->len = len;
-  x->idx = 0U;
-  x->ptr_len = 0U;
-  x->ptr_idx = 0U;
-  return i2c_begin_it(i2c);
-}
-
-/* shared setup for the write-pointer-then-read pattern (reg / mem reads) */
-static HAL_Status i2c_read_ptr_it(I2C_TypeDef *i2c, uint8_t addr,
-                                  const uint8_t *ptr, uint8_t ptr_len,
-                                  uint8_t *buf, uint32_t len) {
-  i2c_xfer_t *x = i2c_xfer(i2c);
-  HAL_ASSERT(x != NULL);
-  if (x == NULL) {
-    return HAL_ERR_UNSUPPORTED;
-  }
-  x->addr = addr;
-  x->phase = I2C_PHASE_TX_THEN_RX;
-  x->tx = NULL;
-  x->rx = buf;
-  x->len = len;
-  x->idx = 0U;
-  x->ptr[0] = ptr[0];
-  x->ptr[1] = (ptr_len == 2U) ? ptr[1] : 0U;
   x->ptr_len = ptr_len;
-  x->ptr_idx = 0U;
-  return i2c_begin_it(i2c);
+  x->tx = tx;
+  x->tx_len = tx_len;
+  x->rx = rx;
+  x->rx_len = rx_len;
+  x->reading = ((((uint32_t)ptr_len + tx_len) == 0U) && (rx_len > 0U));
+  x->n = 0U;
+  x->step = I2C_STEP_START;
+  x->result = HAL_OK;
+  x->state = I2C_STATE_BUSY;
 }
 
-HAL_Status hal_i2c_write_reg_it(I2C_TypeDef *i2c, uint8_t addr, uint8_t reg,
-                                uint8_t val) {
-  i2c_xfer_t *x = i2c_xfer(i2c);
-  HAL_ASSERT(x != NULL);
-  if (x == NULL) {
-    return HAL_ERR_UNSUPPORTED;
-  }
-  /* two-byte write: reg then val, held in ptr[] as the source buffer */
-  x->addr = addr;
-  x->phase = I2C_PHASE_TX;
-  x->ptr[0] = reg;
-  x->ptr[1] = val;
-  x->tx = x->ptr;
-  x->rx = NULL;
-  x->len = 2U;
-  x->idx = 0U;
-  x->ptr_len = 0U;
-  x->ptr_idx = 0U;
-  return i2c_begin_it(i2c);
-}
-
-HAL_Status hal_i2c_read_reg_it(I2C_TypeDef *i2c, uint8_t addr, uint8_t reg,
-                               uint8_t *buf, uint32_t len) {
-  uint8_t p = reg;
-  return i2c_read_ptr_it(i2c, addr, &p, 1U, buf, len);
-}
-
-HAL_Status hal_i2c_mem_write_it(I2C_TypeDef *i2c, uint8_t addr, uint16_t mem,
-                                uint8_t mem_sz, const uint8_t *buf,
-                                uint32_t len) {
-  (void)buf;
-  (void)len;
-  (void)mem;
-  (void)mem_sz;
-  (void)addr;
-  /* mem_write_it would need to concatenate pointer + payload from two buffers
-   * in the ISR; deferred. Use blocking hal_i2c_mem_write for now. */
-  HAL_ASSERT(i2c_index(i2c) >= 0);
-  return HAL_ERR_UNSUPPORTED;
-}
-
-HAL_Status hal_i2c_mem_read_it(I2C_TypeDef *i2c, uint8_t addr, uint16_t mem,
-                               uint8_t mem_sz, uint8_t *buf, uint32_t len) {
-  uint8_t p[2] = {(uint8_t)(mem >> 8), (uint8_t)(mem & 0xFFU)};
-  if (mem_sz == 1U) {
-    p[0] = (uint8_t)(mem & 0xFFU);
-  }
-  return i2c_read_ptr_it(i2c, addr, p, mem_sz, buf, len);
-}
-
-/* finish a transfer: disable IRQs, set state, fire the callback */
-static void i2c_finish(I2C_TypeDef *i2c, i2c_xfer_t *x, HAL_Status result) {
-  i2c->CR2 &= ~(I2C_CR2_ITEVTEN | I2C_CR2_ITBUFEN | I2C_CR2_ITERREN);
+static void it_finish(I2C_TypeDef *i2c, I2C_Xfer *x, HAL_Status result) {
+  i2c->CR2 &= ~I2C_IT_ALL;
+  i2c->CR1 &= ~I2C_CR1_POS;
+  x->step = I2C_STEP_IDLE;
   x->result = result;
   x->state = (result == HAL_OK) ? I2C_STATE_READY : I2C_STATE_ERROR;
   if (x->cb != NULL) {
@@ -661,96 +530,240 @@ static void i2c_finish(I2C_TypeDef *i2c, i2c_xfer_t *x, HAL_Status result) {
   }
 }
 
-/* Event ISR: advances the state machine. Uses the ACK-then-NACK-last scheme;
- * multi-byte N=1/N=2 edge sequencing is handled by arming ACK/STOP at
- * ADDR-clear time. */
-static void i2c_ev_isr(I2C_TypeDef *i2c) {
-  i2c_xfer_t *x = i2c_xfer(i2c);
-  if (x == NULL) {
-    return;
-  }
-  uint32_t sr1 = i2c->SR1;
+static void clear_addr(I2C_TypeDef *i2c) {
+  (void)i2c->SR1; /* SR1 then SR2 */
+  (void)i2c->SR2;
+}
 
-  /* SB: START sent -> send the address (write first, even for reads that begin
-   * with a pointer write) */
-  if (sr1 & I2C_SR1_SB) {
-    uint8_t rw = (x->phase == I2C_PHASE_RX) ? I2C_READ : I2C_WRITE;
-    i2c->DR = (uint32_t)(((uint32_t)x->addr << 1) | rw);
-    return;
-  }
-
-  /* ADDR: address acked -> clear it (SR1 then SR2). For a 1-byte read, arm NACK
-   * + STOP before clearing so the single byte is NACKed. */
-  if (sr1 & I2C_SR1_ADDR) {
-    if (x->phase == I2C_PHASE_RX && x->len == 1U) {
-      i2c->CR1 &= ~I2C_CR1_ACK;
-      (void)i2c->SR1;
-      (void)i2c->SR2;
+static void on_addr(I2C_TypeDef *i2c, I2C_Xfer *x) {
+  if (!x->reading) {
+    clear_addr(i2c);
+    if (((uint32_t)x->ptr_len + x->tx_len) == 0U) { /* address only: a probe */
       i2c->CR1 |= I2C_CR1_STOP;
+      it_finish(i2c, x, HAL_OK);
     } else {
-      (void)i2c->SR1;
-      (void)i2c->SR2;
+      x->step = I2C_STEP_TX;
+      i2c->CR2 |= I2C_CR2_ITBUFEN; /* one TXE per byte */
     }
     return;
   }
 
-  /* RXNE: a byte arrived (read phase) */
-  if ((sr1 & I2C_SR1_RXNE) && (x->phase == I2C_PHASE_RX)) {
-    x->rx[x->idx++] = (uint8_t)i2c->DR;
-    if (x->idx + 1U == x->len) {
-      i2c->CR1 &= ~I2C_CR1_ACK; /* NACK the last byte */
+  x->step = I2C_STEP_RX;
+  x->n = 0U;
+  if (x->rx_len == 1U) {
+    i2c->CR1 &= ~I2C_CR1_ACK;
+    clear_addr(i2c);
+    i2c->CR1 |= I2C_CR1_STOP; /* must land before the byte ends */
+    i2c->CR2 |= I2C_CR2_ITBUFEN;
+  } else if (x->rx_len == 2U) {
+    i2c->CR1 = (i2c->CR1 & ~I2C_CR1_ACK) | I2C_CR1_POS; /* NACK the 2nd */
+    clear_addr(i2c);
+    i2c->CR2 &= ~I2C_CR2_ITBUFEN; /* wait for BTF: both bytes in */
+  } else {
+    i2c->CR1 |= I2C_CR1_ACK;
+    clear_addr(i2c);
+    if (x->rx_len > 3U) {
+      i2c->CR2 |= I2C_CR2_ITBUFEN;
+    } else {
+      i2c->CR2 &= ~I2C_CR2_ITBUFEN;
     }
-    if (x->idx == x->len) {
-      i2c->CR1 |= I2C_CR1_STOP;
-      i2c_finish(i2c, x, HAL_OK);
-    }
-    return;
-  }
-
-  /* TXE/BTF: ready for the next write byte, or a phase transition */
-  if (sr1 & (I2C_SR1_TXE | I2C_SR1_BTF)) {
-    if (x->phase == I2C_PHASE_TX_THEN_RX) {
-      /* sending pointer bytes, then repeated-START into the read */
-      if (x->ptr_idx < x->ptr_len) {
-        i2c->DR = x->ptr[x->ptr_idx++];
-      } else if (sr1 & I2C_SR1_BTF) {
-        x->phase = I2C_PHASE_RX;
-        i2c->CR1 |= I2C_CR1_ACK;
-        i2c->CR1 |=
-            I2C_CR1_START; /* repeated START -> SB handler sends read addr */
-      }
-      return;
-    }
-
-    /* plain write */
-    if (x->idx < x->len) {
-      i2c->DR = x->tx[x->idx++];
-    } else if (sr1 & I2C_SR1_BTF) {
-      i2c->CR1 |= I2C_CR1_STOP;
-      i2c_finish(i2c, x, HAL_OK);
-    }
-    return;
   }
 }
 
-/* Error ISR: map SR1 error bits to a status, STOP, finish. */
-static void i2c_er_isr(I2C_TypeDef *i2c) {
-  i2c_xfer_t *x = i2c_xfer(i2c);
+static void on_tx(I2C_TypeDef *i2c, I2C_Xfer *x, uint32_t sr1) {
+  uint32_t total = (uint32_t)x->ptr_len + x->tx_len;
+
+  if (x->n < total) {
+    if ((sr1 & I2C_SR1_TXE) != 0U) {
+      i2c->DR = (x->n < x->ptr_len) ? x->ptr[x->n] : x->tx[x->n - x->ptr_len];
+      x->n++;
+      if (x->n == total) {
+        i2c->CR2 &= ~I2C_CR2_ITBUFEN; /* next event: BTF, last byte out */
+      }
+    }
+    return;
+  }
+  if ((sr1 & I2C_SR1_BTF) == 0U) {
+    return;
+  }
+  if (x->rx_len > 0U) {
+    x->reading = true;
+    x->step = I2C_STEP_RESTART;
+    i2c->CR1 |= I2C_CR1_START;
+  } else {
+    i2c->CR1 |= I2C_CR1_STOP;
+    it_finish(i2c, x, HAL_OK);
+  }
+}
+
+static void on_rx(I2C_TypeDef *i2c, I2C_Xfer *x, uint32_t sr1) {
+  if (x->rx_len == 2U) {
+    if ((sr1 & I2C_SR1_BTF) != 0U) {
+      i2c->CR1 |= I2C_CR1_STOP;
+      x->rx[0] = (uint8_t)i2c->DR;
+      x->rx[1] = (uint8_t)i2c->DR;
+      x->n = 2U;
+      it_finish(i2c, x, HAL_OK);
+    }
+    return;
+  }
+
+  if ((x->rx_len - x->n) == 3U) {
+    if ((sr1 & I2C_SR1_BTF) != 0U) { /* N-2 in DR, N-1 in shift, SCL held */
+      i2c->CR1 &= ~I2C_CR1_ACK;
+      x->rx[x->n++] = (uint8_t)i2c->DR;
+      i2c->CR1 |= I2C_CR1_STOP;
+      x->rx[x->n++] = (uint8_t)i2c->DR;
+      i2c->CR2 |= I2C_CR2_ITBUFEN; /* last byte by RXNE */
+    }
+    return;
+  }
+
+  if ((sr1 & I2C_SR1_RXNE) != 0U) {
+    HAL_ASSERT(x->n < x->rx_len);
+    x->rx[x->n++] = (uint8_t)i2c->DR;
+    if (x->n == x->rx_len) {
+      it_finish(i2c, x, HAL_OK);
+    } else if ((x->rx_len - x->n) == 3U) {
+      i2c->CR2 &= ~I2C_CR2_ITBUFEN; /* the tail goes by BTF */
+    } else {
+      /* more to come */
+    }
+  }
+}
+
+void hal_i2c_ev_step(I2C_TypeDef *i2c, I2C_Xfer *x) {
+  uint32_t sr1 = i2c->SR1;
+
+  switch (x->step) {
+  case I2C_STEP_START:
+  case I2C_STEP_RESTART:
+    /* TXE/BTF left over from the pointer write stay set until the repeated
+     * START goes out: only SB means anything here */
+    if ((sr1 & I2C_SR1_SB) != 0U) {
+      i2c->DR = ((uint32_t)x->addr << 1) | (x->reading ? I2C_READ : I2C_WRITE);
+      x->step = I2C_STEP_ADDR;
+    }
+    break;
+  case I2C_STEP_ADDR:
+    if ((sr1 & I2C_SR1_ADDR) != 0U) {
+      on_addr(i2c, x);
+    }
+    break;
+  case I2C_STEP_TX:
+    on_tx(i2c, x, sr1);
+    break;
+  case I2C_STEP_RX:
+    on_rx(i2c, x, sr1);
+    break;
+  default:
+    i2c->CR2 &= ~I2C_IT_ALL; /* nothing running */
+    break;
+  }
+}
+
+void hal_i2c_er_step(I2C_TypeDef *i2c, I2C_Xfer *x) {
+  uint32_t sr1 = i2c->SR1;
+  uint32_t errs =
+      sr1 & (I2C_SR1_AF | I2C_SR1_BERR | I2C_SR1_ARLO | I2C_SR1_OVR);
+
+  i2c->SR1 = ~errs; /* rc_w0: clear exactly these */
+  if (x->step == I2C_STEP_IDLE) {
+    i2c->CR2 &= ~I2C_IT_ALL;
+    return;
+  }
+  if ((sr1 & I2C_SR1_ARLO) == 0U) { /* lost arbitration: not our bus to STOP */
+    i2c->CR1 |= I2C_CR1_STOP;
+  }
+  it_finish(i2c, x, ((sr1 & I2C_SR1_AF) != 0U) ? HAL_ERR_NACK : HAL_ERR_BUS);
+}
+
+/* busy check first: a call while busy must not touch the running transfer */
+static HAL_Status it_begin(I2C_TypeDef *i2c, uint8_t addr, const uint8_t *ptr,
+                           uint8_t ptr_len, const uint8_t *tx, uint32_t tx_len,
+                           uint8_t *rx, uint32_t rx_len) {
+  int idx = i2c_index(i2c);
+  HAL_ASSERT(idx >= 0);
+  if (idx < 0) {
+    return HAL_ERR_UNSUPPORTED;
+  }
+  I2C_Xfer *x = &i2c_xfers[idx];
+  if (x->state == I2C_STATE_BUSY) {
+    return HAL_ERR_BUSY;
+  }
+  HAL_Status st = i2c_wait_not_busy(i2c);
+  if (st != HAL_OK) {
+    return st;
+  }
+
+  hal_i2c_xfer_prepare(x, addr, ptr, ptr_len, tx, tx_len, rx, rx_len);
+  i2c->CR1 = (i2c->CR1 & ~I2C_CR1_POS) | I2C_CR1_ACK;
+  i2c->CR2 = (i2c->CR2 & ~I2C_CR2_ITBUFEN) | I2C_CR2_ITEVTEN | I2C_CR2_ITERREN;
+  __NVIC_EnableIRQ(i2c_ev_irq[idx]);
+  __NVIC_EnableIRQ(i2c_er_irq[idx]);
+  i2c->CR1 |= I2C_CR1_START; /* SB -> ISR */
+  return HAL_OK;
+}
+
+HAL_Status hal_i2c_write_it(I2C_TypeDef *i2c, uint8_t addr, const uint8_t *buf,
+                            uint32_t len) {
+  return it_begin(i2c, addr, NULL, 0U, buf, len, NULL, 0U);
+}
+
+HAL_Status hal_i2c_read_it(I2C_TypeDef *i2c, uint8_t addr, uint8_t *buf,
+                           uint32_t len) {
+  HAL_ASSERT(len > 0U); /* a zero-length read would never call back */
+  if (len == 0U) {
+    return HAL_ERR_PARAM;
+  }
+  return it_begin(i2c, addr, NULL, 0U, NULL, 0U, buf, len);
+}
+
+HAL_Status hal_i2c_write_reg_it(I2C_TypeDef *i2c, uint8_t addr, uint8_t reg,
+                                uint8_t val) {
+  const uint8_t p[2] = {reg, val};
+  return it_begin(i2c, addr, p, 2U, NULL, 0U, NULL, 0U);
+}
+
+HAL_Status hal_i2c_read_reg_it(I2C_TypeDef *i2c, uint8_t addr, uint8_t reg,
+                               uint8_t *buf, uint32_t len) {
+  return hal_i2c_mem_read_it(i2c, addr, reg, 1U, buf, len);
+}
+
+HAL_Status hal_i2c_mem_write_it(I2C_TypeDef *i2c, uint8_t addr, uint16_t mem,
+                                uint8_t mem_sz, const uint8_t *buf,
+                                uint32_t len) {
+  HAL_ASSERT((mem_sz == 1U) || (mem_sz == 2U));
+  const uint8_t p[2] = {(uint8_t)(mem >> 8), (uint8_t)(mem & 0xFFU)};
+  return it_begin(i2c, addr, &p[2U - mem_sz], mem_sz, buf, len, NULL, 0U);
+}
+
+HAL_Status hal_i2c_mem_read_it(I2C_TypeDef *i2c, uint8_t addr, uint16_t mem,
+                               uint8_t mem_sz, uint8_t *buf, uint32_t len) {
+  HAL_ASSERT((mem_sz == 1U) || (mem_sz == 2U));
+  HAL_ASSERT(len > 0U);
+  if (len == 0U) {
+    return HAL_ERR_PARAM;
+  }
+  const uint8_t p[2] = {(uint8_t)(mem >> 8), (uint8_t)(mem & 0xFFU)};
+  return it_begin(i2c, addr, &p[2U - mem_sz], mem_sz, NULL, 0U, buf, len);
+}
+
+void hal_i2c_abort_it(I2C_TypeDef *i2c) {
+  I2C_Xfer *x = i2c_xfer(i2c);
   if (x == NULL) {
     return;
   }
-  uint32_t sr1 = i2c->SR1;
-  HAL_Status st = (sr1 & I2C_SR1_AF) ? HAL_ERR_NACK : HAL_ERR_BUS;
-
-  /* rc_w0: clear exactly the flags read above in one write */
-  i2c->SR1 = ~(uint32_t)(sr1 & (I2C_SR1_AF | I2C_SR1_BERR | I2C_SR1_ARLO |
-                                I2C_SR1_OVR));
-
+  x->step = I2C_STEP_IDLE; /* a late ISR now does nothing */
+  i2c->CR2 &= ~I2C_IT_ALL;
+  if (x->state != I2C_STATE_BUSY) {
+    return; /* finished before we got here */
+  }
   i2c->CR1 |= I2C_CR1_STOP;
-  i2c_finish(i2c, x, st);
+  it_finish(i2c, x, HAL_ERR_TIMEOUT);
 }
 
-void I2C1_EV_IRQHandler(void) { i2c_ev_isr(I2C1); }
-void I2C1_ER_IRQHandler(void) { i2c_er_isr(I2C1); }
-void I2C2_EV_IRQHandler(void) { i2c_ev_isr(I2C2); }
-void I2C2_ER_IRQHandler(void) { i2c_er_isr(I2C2); }
+void I2C1_EV_IRQHandler(void) { hal_i2c_ev_step(I2C1, &i2c_xfers[0]); }
+void I2C1_ER_IRQHandler(void) { hal_i2c_er_step(I2C1, &i2c_xfers[0]); }
+void I2C2_EV_IRQHandler(void) { hal_i2c_ev_step(I2C2, &i2c_xfers[1]); }
+void I2C2_ER_IRQHandler(void) { hal_i2c_er_step(I2C2, &i2c_xfers[1]); }

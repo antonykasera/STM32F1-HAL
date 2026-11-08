@@ -23,7 +23,7 @@ Blue Pill, mostly with a logic analyzer; dates are the last check.
 | Timer  | yes  | 2026-11-07 (basic_timer) | — |
 | PWM    | yes  | 2026-11-08 (init split, 1 kHz measured by capture) | `hal_pwm_stop` |
 | UART   | yes  | 2026-11-08 (TX, `write_dma`) | `try_read` / `flush` (uart_echo) |
-| I2C    | calc only | 2026-08 (blocking, AS5600) | ms timeouts; interrupt mode has known bugs |
+| I2C    | yes  | 2026-11-08 (blocking + interrupt, i2c_it_selftest 7/7) | unplugged sensor |
 | CAN    | yes  | 2026-11-08 (loopback TX + RX) | RX interrupt, real bus |
 | IWDG   | yes  | 2026-11-08 (iwdg_demo) | — |
 | ADC    | yes  | 2026-11-08 (single + DMA scan: PA0/PA1, VDDA, temp) | — |
@@ -120,6 +120,7 @@ flex/
 │   ├── i2c_scan/
 │   ├── i2c_as5600/
 │   ├── i2c_as5600_it/
+│   ├── i2c_it_selftest/
 │   ├── can_loopback/
 │   ├── can_rx_irq/
 │   ├── iwdg_demo/

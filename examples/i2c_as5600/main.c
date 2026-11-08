@@ -21,7 +21,7 @@
 
 #define AS5600_ADDR 0x36U
 #define AS5600_STATUS 0x0BU    /* MD (bit5) / ML (bit4) / MH (bit3) */
-#define AS5600_RAW_ANGLE 0x0EU /* 0x0E high (11:8), 0x0F low (7:0) */
+#define AS5600_RAW_ANGLE 0x0CU /* 0x0C high (11:8), 0x0D low; 0x0E is ANGLE */
 
 #define AS5600_MD (1U << 5)
 #define AS5600_ML (1U << 4)
@@ -54,22 +54,19 @@ int main(void) {
   hal_sysclock_init(&CLOCK_CONFIG_72MHZ_HSE);
   hal_systick_init();
 
-  /* USART1 for output */
+  /* USART1 for output; enabled before PA9 becomes AF so TX starts idle-high */
   GPIO_Config tx_cfg = {GPIO_MODE_AF_PP, GPIO_SPEED_50_MHZ, GPIO_PULL_NONE};
-  hal_gpio_init_port_clock(UART_PORT);
-  hal_gpio_pin_init(UART_PORT, UART_TX, &tx_cfg);
-  hal_afio_enable();
   UART_Config uart_cfg = {115200, UART_PARITY_NONE, UART_STOP_1};
+  hal_gpio_init_port_clock(UART_PORT);
+  hal_afio_enable();
   hal_uart_init(USART1, &uart_cfg);
+  hal_gpio_pin_init(UART_PORT, UART_TX, &tx_cfg);
 
-  /* I2C1 on PB6/PB7, alternate-function open-drain */
-  GPIO_Config i2c_cfg = {GPIO_MODE_AF_OD, GPIO_SPEED_50_MHZ, GPIO_PULL_NONE};
-  hal_gpio_init_port_clock(I2C_PORT);
-  hal_gpio_pin_init(I2C_PORT, I2C_SCL, &i2c_cfg);
-  hal_gpio_pin_init(I2C_PORT, I2C_SDA, &i2c_cfg);
-
+  /* I2C1 on PB6/PB7. Recovery first: a reset mid-transfer can leave the
+   * sensor holding SDA low; this clocks it free, then runs hal_i2c_init */
   I2C_Config cfg = {I2C_SPEED_STANDARD, 10U};
-  hal_i2c_init(I2C1, &cfg);
+  hal_gpio_init_port_clock(I2C_PORT);
+  (void)hal_i2c_bus_recover(I2C1, I2C_PORT, I2C_SCL, I2C_SDA, &cfg);
 
   /* a 1-byte read (exercises the N=1 path) */
   uint8_t status = 0U;
