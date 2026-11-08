@@ -131,6 +131,14 @@ void test_capture_psc(void);
 void test_capture_init_registers(void);
 void test_capture_read(void);
 
+/* --- tim1 (test_tim1.c) --- */
+void test_tim1_dtg_values(void);
+void test_tim1_dtg_rejects(void);
+void test_tim1_dtg_shortest_safe(void);
+void test_tim1_bdtr(void);
+void test_tim1_channel_complementary(void);
+void test_tim1_start_stop_trip(void);
+
 /* --- error (test_error.c) --- */
 void test_status_str_known(void);
 void test_status_str_unknown(void);
@@ -233,6 +241,13 @@ int main(void) {
   TEST_RUN(test_capture_psc);
   TEST_RUN(test_capture_init_registers);
   TEST_RUN(test_capture_read);
+
+  TEST_RUN(test_tim1_dtg_values);
+  TEST_RUN(test_tim1_dtg_rejects);
+  TEST_RUN(test_tim1_dtg_shortest_safe);
+  TEST_RUN(test_tim1_bdtr);
+  TEST_RUN(test_tim1_channel_complementary);
+  TEST_RUN(test_tim1_start_stop_trip);
 
   TEST_RUN(test_status_str_known);
   TEST_RUN(test_status_str_unknown);
