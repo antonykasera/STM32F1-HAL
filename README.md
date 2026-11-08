@@ -21,7 +21,7 @@ Blue Pill, mostly with a logic analyzer; dates are the last check.
 | Clock / SysTick | yes | 2026-11-07 (blink timing) | — |
 | EXTI   | —    | 2026-07 (button) | — |
 | Timer  | yes  | 2026-11-07 (basic_timer) | — |
-| PWM    | yes  | 2026-11-08 (init split, 1 kHz measured by capture) | `hal_pwm_stop` |
+| PWM    | yes  | 2026-11-08 (init split, 1 kHz by capture, 5 MHz = 5.14 MHz as solved) | `hal_pwm_stop` |
 | UART   | yes  | 2026-11-08 (TX, `write_dma`) | `try_read` / `flush` (uart_echo) |
 | I2C    | yes  | 2026-11-08 (blocking + interrupt, i2c_it_selftest 7/7) | unplugged sensor |
 | CAN    | yes  | 2026-11-08 (loopback TX + RX, RX interrupt: can_rx_irq) | real bus |
