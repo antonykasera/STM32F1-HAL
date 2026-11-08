@@ -1,5 +1,7 @@
 # flex Hardware Abstraction Layer for STM32
 
+[![CI](https://github.com/antonykasera/STM32F1-HAL/actions/workflows/ci.yml/badge.svg)](https://github.com/antonykasera/STM32F1-HAL/actions/workflows/ci.yml)
+
 A minimal Hardware Abstraction Layer for STM32 microcontrollers.
 
 ## Supported Hardware
@@ -225,6 +227,8 @@ See [`template/`](template/) for a minimal working consumer.
 # Run unit tests
 make host-test
 ```
+
+CI runs `make host-test` and `make examples` on every push (Ubuntu 24.04, GCC 13).
 
 ## Build Analysis
 
