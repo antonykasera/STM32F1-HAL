@@ -121,6 +121,11 @@ void test_spi_calc_br_rejects(void);
 void test_spi_calc_cr1(void);
 void test_spi_transfer_loop(void);
 
+/* --- encoder (test_encoder.c) --- */
+void test_encoder_delta_wraps(void);
+void test_encoder_init_registers(void);
+void test_encoder_update_accumulates(void);
+
 /* --- error (test_error.c) --- */
 void test_status_str_known(void);
 void test_status_str_unknown(void);
@@ -215,6 +220,10 @@ int main(void) {
   TEST_RUN(test_spi_calc_br_rejects);
   TEST_RUN(test_spi_calc_cr1);
   TEST_RUN(test_spi_transfer_loop);
+
+  TEST_RUN(test_encoder_delta_wraps);
+  TEST_RUN(test_encoder_init_registers);
+  TEST_RUN(test_encoder_update_accumulates);
 
   TEST_RUN(test_status_str_known);
   TEST_RUN(test_status_str_unknown);

@@ -27,6 +27,7 @@ Blue Pill, mostly with a logic analyzer; dates are the last check.
 | ADC    | yes  | 2026-11-08 (single + DMA scan: PA0/PA1, VDDA, temp) | — |
 | DMA    | yes  | 2026-11-08 (uart_dma, adc_scan) | — |
 | SPI    | yes  | 2026-11-08 (loopback, blocking + DMA) | — |
+| Encoder | yes | — | encoder_selftest |
 | AFIO remap | yes | 2026-11-08 (CAN on PB8/PB9) | — |
 
 ## Project Structure
@@ -46,6 +47,7 @@ flex/
 │   ├── hal_adc.h
 │   ├── hal_dma.h
 │   ├── hal_spi.h
+│   ├── hal_encoder.h
 │   └── hal_clock.h
 ├── src/
 │   ├── f1/
@@ -69,7 +71,8 @@ flex/
 │   │   ├── hal_dma_f1.c
 │   │   ├── hal_dma_calc.c
 │   │   ├── hal_spi_f1.c
-│   │   └── hal_spi_calc.c
+│   │   ├── hal_spi_calc.c
+│   │   └── hal_encoder_f1.c
 │   └── common/
 │       └── hal_error.c
 ├── cmsis/
@@ -92,7 +95,8 @@ flex/
 │   ├── adc_read/
 │   ├── uart_dma/
 │   ├── adc_scan/
-│   └── spi_loopback/
+│   ├── spi_loopback/
+│   └── encoder_selftest/
 ├── test/
 │   └── host/
 │       ├── test_assert.h
@@ -108,6 +112,7 @@ flex/
 │       ├── test_adc.c
 │       ├── test_dma.c
 │       ├── test_spi.c
+│       ├── test_encoder.c
 │       └── test_error.c
 ├── template/
 ├── Makefile
