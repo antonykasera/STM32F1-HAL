@@ -31,8 +31,7 @@ void hal_wwdg_refresh(WWDG_TypeDef *wwdg);
 /* pause the countdown while a debugger has the core halted */
 void hal_wwdg_freeze_in_debug(void);
 
-/* true if the last reset came from the WWDG; clears all RCC reset flags, as
- * hal_iwdg_caused_reset() does, so ask only one of them per boot */
+/* true if the last reset came from the WWDG (hal_reset_cause) */
 bool hal_wwdg_caused_reset(void);
 
 #endif /* HAL_WWDG_H */

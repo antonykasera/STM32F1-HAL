@@ -1,2 +1,2 @@
 # flex modules this example links (see flex.mk)
-FLEX_MODULES := clock gpio iwdg uart
+FLEX_MODULES := clock gpio iwdg uart reset

@@ -167,6 +167,10 @@ void test_flash_write_skips_equal(void);
 void test_wwdg_calc_values(void);
 void test_wwdg_calc_rejects(void);
 
+/* --- reset (test_reset.c) --- */
+void test_reset_calc_cause(void);
+void test_reset_cause_str(void);
+
 /* --- usb (test_usb.c) --- */
 void test_usb_epr_cases(void);
 void test_usb_epr_exhaustive(void);
@@ -312,6 +316,9 @@ int main(void) {
 
   TEST_RUN(test_wwdg_calc_values);
   TEST_RUN(test_wwdg_calc_rejects);
+
+  TEST_RUN(test_reset_calc_cause);
+  TEST_RUN(test_reset_cause_str);
 
   TEST_RUN(test_usb_epr_cases);
   TEST_RUN(test_usb_epr_exhaustive);

@@ -29,7 +29,7 @@ void hal_iwdg_feed(IWDG_TypeDef *iwdg);
 /* pause the countdown while a debugger has the core halted */
 void hal_iwdg_freeze_in_debug(void);
 
-/* true if the last reset came from the IWDG; clears all RCC reset flags */
+/* true if the last reset came from the IWDG (hal_reset_cause) */
 bool hal_iwdg_caused_reset(void);
 
 #endif /* HAL_IWDG_H */

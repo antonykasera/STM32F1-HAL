@@ -9,6 +9,7 @@
 #include "hal_clock.h"
 #include "hal_error.h"
 #include "hal_iwdg.h"
+#include "hal_reset.h"
 #include "stm32f103xb.h"
 #include <stdbool.h>
 #include <stdint.h>
@@ -51,7 +52,5 @@ void hal_iwdg_freeze_in_debug(void) {
 }
 
 bool hal_iwdg_caused_reset(void) {
-  bool by_iwdg = (RCC->CSR & RCC_CSR_IWDGRSTF) != 0U;
-  RCC->CSR |= RCC_CSR_RMVF;
-  return by_iwdg;
+  return (hal_reset_cause() & HAL_RESET_IWDG) != 0U;
 }

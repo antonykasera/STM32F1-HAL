@@ -37,6 +37,7 @@ Blue Pill, mostly with a logic analyzer; dates are the last check.
 | Flash  | yes  | 2026-11-08 (flash_store: erase, write, persists) | — |
 | CRC    | yes  | 2026-11-08 (flash_store: matches software model) | — |
 | WWDG   | calc only | 2026-11-08 (wwdg_demo: early reset, late at 49 ms) | — |
+| Reset cause | calc only | 2026-11-08 (reset_cause: power-on, software, IWDG, WWDG) | — |
 | USB CDC | yes | 2026-11-08 (usb_cdc_echo: enumerate, echo, paste, reset, polled + IRQ) | can't link with CAN |
 | AFIO remap | yes | 2026-11-08 (CAN on PB8/PB9) | — |
 
@@ -65,6 +66,7 @@ flex/
 │   ├── hal_flash.h
 │   ├── hal_crc.h
 │   ├── hal_wwdg.h
+│   ├── hal_reset.h
 │   ├── hal_usb.h
 │   └── hal_clock.h
 ├── src/
@@ -101,6 +103,8 @@ flex/
 │   │   ├── hal_crc_calc.c
 │   │   ├── hal_wwdg_f1.c
 │   │   ├── hal_wwdg_calc.c
+│   │   ├── hal_reset_f1.c
+│   │   ├── hal_reset_calc.c
 │   │   ├── hal_usb_f1.c
 │   │   ├── hal_usb_calc.c
 │   │   └── hal_usb_desc.c
@@ -135,6 +139,7 @@ flex/
 │   ├── lowpower_demo/
 │   ├── flash_store/
 │   ├── wwdg_demo/
+│   ├── reset_cause/
 │   └── usb_cdc_echo/
 ├── test/
 │   └── host/
@@ -158,6 +163,7 @@ flex/
 │       ├── test_flash.c
 │       ├── test_crc.c
 │       ├── test_wwdg.c
+│       ├── test_reset.c
 │       ├── test_usb.c
 │       └── test_error.c
 ├── template/
