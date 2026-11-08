@@ -37,7 +37,6 @@ int main(void) {
   hal_gpio_pin_init(PORT, UART_TX, &tx_cfg);
 
   /* enable alternate function */
-  hal_afio_enable();
 
   /* initialize USART1 with the config */
   hal_uart_init(USART1, &uart_cfg);

@@ -56,7 +56,6 @@ int main(void) {
 
   hal_gpio_init_port_clock(UART_PORT);
   hal_gpio_pin_init(UART_PORT, UART_TX, &uart_tx);
-  hal_afio_enable();
   hal_uart_init(USART1, &uart_cfg);
 
   hal_gpio_init_port_clock(CAN_PORT);

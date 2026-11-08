@@ -39,7 +39,6 @@ int main(void) {
   GPIO_Config tx_cfg = {GPIO_MODE_AF_PP, GPIO_SPEED_50_MHZ, GPIO_PULL_NONE};
   hal_gpio_init_port_clock(UART_PORT);
   hal_gpio_pin_init(UART_PORT, UART_TX, &tx_cfg);
-  hal_afio_enable();
   UART_Config uart_cfg = {115200, UART_PARITY_NONE, UART_STOP_1};
   hal_uart_init(USART1, &uart_cfg);
 

@@ -62,7 +62,6 @@ int main(void) {
   hal_gpio_pin_init(UART_PORT, UART_TX, &tx_cfg);
   hal_gpio_pin_init(GPIOA, 0U, &ain_cfg);
   hal_gpio_pin_init(GPIOA, 1U, &ain_cfg);
-  hal_afio_enable();
   hal_uart_init(USART1, &uart_cfg);
 
   /* 239.5 cycles suits all four, as the internal channels need it */

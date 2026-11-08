@@ -50,7 +50,6 @@ int main(void) {
   hal_gpio_pin_init(GPIOA, UART_TX, &af_cfg);
   hal_gpio_pin_init(GPIOA, 6U, &af_cfg); /* TIM3 CH1 out */
   hal_gpio_pin_init(GPIOA, 0U, &in_cfg); /* TIM2 CH1 in */
-  hal_afio_enable();
   hal_uart_init(USART1, &uart_cfg);
 
   hal_pwm_init(TIM3, 1000U);

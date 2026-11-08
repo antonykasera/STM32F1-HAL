@@ -58,6 +58,8 @@ void hal_gpio_pin_deinit(GPIO_TypeDef *port, uint8_t pin);
 void hal_gpio_pin_lock(GPIO_TypeDef *port, uint8_t pin);
 uint32_t hal_afio_mapr_next(uint32_t mapr, uint32_t field_mask,
                             uint32_t field_value);
+/* AFIO clock: only for AFIO registers (remap, EXTI line select), and both
+ * of those enable it; default-mapped alternate functions work without it */
 void hal_afio_enable(void);
 void hal_afio_remap(uint32_t field_mask, uint32_t field_value);
 

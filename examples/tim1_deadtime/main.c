@@ -54,7 +54,6 @@ int main(void) {
   hal_gpio_pin_init(GPIOA, 8U, &af_cfg);  /* CH1 */
   hal_gpio_pin_init(GPIOB, 13U, &af_cfg); /* CH1N */
   hal_gpio_pin_init(GPIOB, BKIN_PIN, &bkin_cfg);
-  hal_afio_enable();
   hal_uart_init(USART1, &uart_cfg);
 
   uint8_t dtg = 0U;

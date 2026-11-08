@@ -39,7 +39,6 @@ int main(void) {
   hal_gpio_pin_init(UART_PORT, UART_RX, &rx_cfg);
   hal_gpio_pin_init(UART_PORT, UART_TX, &tx_cfg);
   hal_gpio_pin_init(LED_PORT, LED_PIN, &led_cfg);
-  hal_afio_enable();
   hal_uart_init(USART1, &uart_cfg);
 
   uint32_t last_blink = hal_get_tick();

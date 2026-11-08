@@ -62,7 +62,6 @@ int main(void) {
   hal_gpio_init_port_clock(LED_PORT);
   hal_gpio_pin_init(GPIOA, UART_TX, &tx_cfg);
   hal_gpio_pin_init(LED_PORT, LED_PIN, &led_cfg);
-  hal_afio_enable();
   hal_uart_init(USART1, &uart_cfg);
   led(true);
 

@@ -74,7 +74,6 @@ int main(void) {
   hal_gpio_pin_init(GPIOB, 1U, &out_cfg);
   hal_gpio_pin_write(GPIOB, 0U, false);
   hal_gpio_pin_write(GPIOB, 1U, false);
-  hal_afio_enable();
   hal_uart_init(USART1, &uart_cfg);
 
   (void)hal_encoder_init(&enc, TIM2, 0U, false); /* clean edges: no filter */

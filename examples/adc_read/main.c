@@ -60,7 +60,6 @@ int main(void) {
   hal_gpio_init_port_clock(UART_PORT);
   hal_gpio_pin_init(UART_PORT, UART_TX, &tx_cfg);
   hal_gpio_pin_init(AIN_PORT, AIN_PIN, &ain_cfg);
-  hal_afio_enable();
   hal_uart_init(USART1, &uart_cfg);
 
   if (hal_adc_init(ADC1) != HAL_OK) {

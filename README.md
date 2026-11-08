@@ -24,7 +24,7 @@ Blue Pill, mostly with a logic analyzer; dates are the last check.
 | PWM    | yes  | 2026-11-08 (init split, 1 kHz measured by capture) | `hal_pwm_stop` |
 | UART   | yes  | 2026-11-08 (TX, `write_dma`) | `try_read` / `flush` (uart_echo) |
 | I2C    | yes  | 2026-11-08 (blocking + interrupt, i2c_it_selftest 7/7) | unplugged sensor |
-| CAN    | yes  | 2026-11-08 (loopback TX + RX) | RX interrupt, real bus |
+| CAN    | yes  | 2026-11-08 (loopback TX + RX, RX interrupt: can_rx_irq) | real bus |
 | IWDG   | yes  | 2026-11-08 (iwdg_demo) | — |
 | ADC    | yes  | 2026-11-08 (single + DMA scan: PA0/PA1, VDDA, temp) | — |
 | DMA    | yes  | 2026-11-08 (uart_dma, adc_scan) | — |
@@ -34,9 +34,9 @@ Blue Pill, mostly with a logic analyzer; dates are the last check.
 | TIM1   | yes  | 2026-11-08 (1 us dead time, break to low, re-arm) | — |
 | RTC    | yes  | 2026-11-08 (lowpower_demo: alarm, backup regs) | — |
 | PWR    | —    | 2026-11-08 (lowpower_demo: Stop, Standby) | — |
-| Flash  | yes  | — | flash_store |
-| CRC    | yes  | — | flash_store |
-| WWDG   | calc only | — | wwdg_demo (early and late) |
+| Flash  | yes  | 2026-11-08 (flash_store: erase, write, persists) | — |
+| CRC    | yes  | 2026-11-08 (flash_store: matches software model) | — |
+| WWDG   | calc only | 2026-11-08 (wwdg_demo: early reset, late at 49 ms) | — |
 | USB CDC | yes | 2026-11-08 (usb_cdc_echo: enumerate, echo, paste, reset, polled + IRQ) | can't link with CAN |
 | AFIO remap | yes | 2026-11-08 (CAN on PB8/PB9) | — |
 

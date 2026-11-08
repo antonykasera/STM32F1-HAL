@@ -59,7 +59,6 @@ int main(void) {
   hal_gpio_pin_init(PORT, MISO_PIN, &in_cfg);
   hal_gpio_pin_init(PORT, CS_PIN, &cs_cfg);
   hal_gpio_pin_write(PORT, CS_PIN, true);
-  hal_afio_enable();
   hal_uart_init(USART1, &uart_cfg);
   hal_spi_init(SPI1, &spi_cfg);
 
