@@ -29,3 +29,6 @@ jobs:
 
       - name: Build every example (-Werror)
         run: make examples
+
+      - name: Build the template
+        run: make template-check

@@ -4,8 +4,6 @@ FAMILY ?= f1
 
 EXAMPLE ?= blink
 
-# Each example builds into its own directory, so one example's image can never
-# be flashed by mistake for another's.
 BUILD_ROOT = build
 BUILD      = $(BUILD_ROOT)/$(EXAMPLE)
 
@@ -26,7 +24,7 @@ CFLAGS  = $(MCU_FLAGS) $(DEFS) $(INCLUDES) \
           -O0 -g3 -std=c11 \
           -ffunction-sections -fdata-sections
 
-# header deps; separate from CFLAGS, which debug/stackusage override
+# separate from CFLAGS, which debug/stackusage replace
 DEPFLAGS = -MMD -MP
 EXTRA_CFLAGS ?=
 
@@ -38,12 +36,7 @@ LDFLAGS = $(MCU_FLAGS) \
           --specs=nano.specs --specs=nosys.specs \
           -Wl,-Map=$(BUILD)/$(TARGET).map
 
-# link-time optimisation (release builds):
-# CFLAGS  += -flto
-# LDFLAGS += -flto
-
-# each example lists its flex modules in modules.mk (default: all), so unused
-# modules' IRQ handlers stay out of the image, the same as in consumer projects
+# per-example module list keeps unused IRQ handlers out of the image
 -include examples/$(EXAMPLE)/modules.mk
 FLEX_FAMILY := $(FAMILY)
 include flex.mk
@@ -60,8 +53,7 @@ OBJS += $(BUILD)/startup_stm32f103xb.o
 
 all: $(BUILD)/$(TARGET).elf $(BUILD)/$(TARGET).bin $(BUILD)/$(TARGET).hex size
 
-# Must stay below `all`: the .d files define targets, and the first target in
-# the Makefile becomes the default goal.
+# after `all`, the default goal
 -include $(OBJS:.o=.d)
 
 $(BUILD)/%.o: %.c
@@ -86,8 +78,7 @@ size: $(BUILD)/$(TARGET).elf
 $(BUILD):
 	mkdir -p $(BUILD)
 
-# --reset: without it the old program's peripherals (e.g. a circular DMA) keep
-# running into the new program's RAM
+# --reset: or the old program's peripherals keep running
 flash: $(BUILD)/$(TARGET).bin
 	st-flash --reset write $(BUILD)/$(TARGET).bin 0x8000000
 
@@ -99,8 +90,7 @@ flash-ocd: $(BUILD)/$(TARGET).elf
 gdbserver:
 	openocd $(OPENOCD_CFG)
 
-# -nx stops gdb auto-loading ./.gdbinit (when it is on the auto-load safe path),
-# so -x runs it exactly once: one connect, one load, one break at main.
+# -nx: no auto-loaded .gdbinit, so -x runs it once
 gdb: $(BUILD)/$(TARGET).elf
 	@openocd $(OPENOCD_CFG) >/tmp/flex-openocd.log 2>&1 & \
 	OCD_PID=$$!; \
@@ -111,7 +101,17 @@ gdb: $(BUILD)/$(TARGET).elf
 clean:
 	rm -rf $(BUILD_ROOT)
 
-# Build every example from clean with warnings as errors
+TPL = $(BUILD_ROOT)/template-check
+template-check:
+	@rm -rf $(TPL) && mkdir -p $(TPL)/src $(TPL)/drivers
+	@cp template/Makefile template/linker.ld template/main.c $(TPL)/
+	@printf 'int util_a(void);\nint util_a(void) { return 1; }\n' > $(TPL)/src/util.c
+	@printf 'int util_b(void);\nint util_b(void) { return 2; }\n' > $(TPL)/drivers/util.c
+	$(MAKE) --no-print-directory -C $(TPL) FLEX_DIR=$(CURDIR) EXTRA_CFLAGS=-Werror
+	$(MAKE) --no-print-directory -C $(TPL) FLEX_DIR=../.. BUILD_ROOT=build-rel EXTRA_CFLAGS=-Werror
+	@test -f $(TPL)/build/release/src/util.o && test -f $(TPL)/build/release/drivers/util.o
+	@echo "--- template ok ---"
+
 EXAMPLES = $(notdir $(patsubst %/,%,$(wildcard examples/*/)))
 
 examples: clean
@@ -136,11 +136,10 @@ stackusage:
 	@echo "--- stack frames (bytes, largest first) ---"
 	@find $(BUILD) -name '*.su' -exec cat {} + | sort -t$$'\t' -k2 -nr | head -25
 
-
 debug: clean
 	$(MAKE) CFLAGS="$(MCU_FLAGS) $(DEFS) $(INCLUDES) -Wall -Wextra -Wshadow -Wconversion -Wsign-conversion -Wdouble-promotion -Og -g3 -std=c11 -ffunction-sections -fdata-sections" LDFLAGS="$(MCU_FLAGS) -Tlinker.ld -Wl,--gc-sections --specs=nano.specs --specs=nosys.specs -Wl,-Map=$(BUILD)/$(TARGET).map" all
 
-# Requires 'bear'
+# needs bear
 compdb: clean
 	bear -- $(MAKE) all
 
@@ -189,4 +188,4 @@ host-test:
 	./$(HOST_BUILD)/test_runner
 	@echo "--- Host tests passed ---"
 
-.PHONY: all size sections syms disasm stackusage flash flash-ocd gdbserver gdb clean examples debug compdb host-test
+.PHONY: template-check all size sections syms disasm stackusage flash flash-ocd gdbserver gdb clean examples debug compdb host-test

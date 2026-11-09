@@ -17,27 +17,27 @@ Host = unit tests run on the PC (`make host-test`). Hardware = verified on a
 Blue Pill, mostly with a logic analyzer; dates are the last check.
 
 | Module | Host | Hardware | Pending |
-|--------|------|----------|---------|
-| GPIO   | yes  | 2026-11-07 (blink) | — |
+| -------- | ------ | ---------- | --------- |
+| GPIO | yes | 2026-11-07 (blink) | — |
 | Clock / SysTick | yes | 2026-11-07 (blink timing) | — |
-| EXTI   | —    | 2026-07 (button) | — |
-| Timer  | yes  | 2026-11-07 (basic_timer) | — |
-| PWM    | yes  | 2026-11-08 (init split, 1 kHz by capture, 5 MHz = 5.14 MHz as solved, stop mid-pulse goes low) | — |
-| UART   | yes  | 2026-11-08 (TX, `write_dma`, uart_loopback: `try_read`, `flush`, overrun) | uart_echo with a PC |
-| I2C    | yes  | 2026-11-08 (blocking + interrupt, i2c_it_selftest 7/7) | unplugged sensor |
-| CAN    | yes  | 2026-11-08 (loopback TX + RX, RX interrupt: can_rx_irq) | real bus |
-| IWDG   | yes  | 2026-11-08 (iwdg_demo) | — |
-| ADC    | yes  | 2026-11-08 (single + DMA scan: PA0/PA1, VDDA, temp) | — |
-| DMA    | yes  | 2026-11-08 (uart_dma, adc_scan) | — |
-| SPI    | yes  | 2026-11-08 (loopback, blocking + DMA) | — |
+| EXTI | — | 2026-07 (button) | — |
+| Timer | yes | 2026-11-07 (basic_timer) | — |
+| PWM | yes | 2026-11-08 (init split, 1 kHz by capture, 5 MHz = 5.14 MHz as solved, stop mid-pulse goes low) | — |
+| UART | yes | 2026-11-08 (TX, `write_dma`, uart_loopback: `try_read`, `flush`, overrun) | uart_echo with a PC |
+| I2C | yes | 2026-11-08 (blocking + interrupt, i2c_it_selftest 7/7) | unplugged sensor |
+| CAN | yes | 2026-11-08 (loopback TX + RX, RX interrupt: can_rx_irq) | real bus |
+| IWDG | yes | 2026-11-08 (iwdg_demo) | — |
+| ADC | yes | 2026-11-08 (single + DMA scan: PA0/PA1, VDDA, temp) | — |
+| DMA | yes | 2026-11-08 (uart_dma, adc_scan) | — |
+| SPI | yes | 2026-11-08 (loopback, blocking + DMA) | — |
 | Encoder | yes | 2026-11-08 (encoder_selftest) | real encoder |
 | Capture | yes | 2026-11-08 (capture_selftest) | — |
-| TIM1   | yes  | 2026-11-08 (1 us dead time, break to low, re-arm) | — |
-| RTC    | yes  | 2026-11-08 (lowpower_demo: alarm, backup regs) | — |
-| PWR    | —    | 2026-11-08 (lowpower_demo: Stop, Standby) | — |
-| Flash  | yes  | 2026-11-08 (flash_store: erase, write, persists) | — |
-| CRC    | yes  | 2026-11-08 (flash_store: matches software model) | — |
-| WWDG   | calc only | 2026-11-08 (wwdg_demo: early reset, late at 49 ms) | — |
+| TIM1 | yes | 2026-11-08 (1 us dead time, break to low, re-arm) | — |
+| RTC | yes | 2026-11-08 (lowpower_demo: alarm, backup regs) | — |
+| PWR | — | 2026-11-08 (lowpower_demo: Stop, Standby) | — |
+| Flash | yes | 2026-11-08 (flash_store: erase, write, persists) | — |
+| CRC | yes | 2026-11-08 (flash_store: matches software model) | — |
+| WWDG | calc only | 2026-11-08 (wwdg_demo: early reset, late at 49 ms) | — |
 | Reset cause | calc only | 2026-11-08 (reset_cause: power-on, software, IWDG, WWDG) | — |
 | USB CDC | yes | 2026-11-08 (usb_cdc_echo: enumerate, echo, paste, reset, polled + IRQ) | can't link with CAN |
 | AFIO remap | yes | 2026-11-08 (CAN on PB8/PB9) | — |
@@ -238,7 +238,25 @@ SRCS   += $(FLEX_SRCS)       # flex HAL + common sources
 ASM    += $(FLEX_STARTUP)    # CMSIS startup (or bring your own)
 ```
 
-See [`template/`](template/) for a minimal working consumer.
+### Starting a project from the template
+
+Copy [`template/`](template/), add flex as `lib/flex`, and set your layout at
+the top of its Makefile:
+
+```makefile
+APP_DIRS := src drivers        # searched recursively; . works too
+APP_INC  := include
+FLEX_MODULES := gpio clock uart
+FLEXLIB_LIBS := math           # optional flexlib in lib/flexlib: utils, math
+```
+
+Objects keep their folders, so `src/util.c` and `drivers/util.c` don't
+collide, and library folders are never swept into your sources. Release
+(`-Os -flto`) and `DEBUG=1` (`-Og`) builds go to separate folders, and each
+link prints flash and RAM use. `make help` lists the rest: `flash`,
+`flash-ocd`, `gdb`, `term`, `size`, `syms`, `disasm`, `stack`, `sources`,
+and `compdb` (writes `compile_commands.json` for clangd, no `bear` needed).
+CI builds the template with `make template-check`.
 
 ## Host-Side Testing
 
@@ -247,22 +265,18 @@ See [`template/`](template/) for a minimal working consumer.
 make host-test
 ```
 
-CI runs `make host-test` and `make examples` on every push (Ubuntu 24.04, GCC 13).
+CI runs `make host-test`, `make examples` and `make template-check` (Ubuntu 24.04, GCC 13).
 
 ## Build Analysis
 
-Static analysis of the built ELF
+Inspect what an example compiles to (`EXAMPLE=` as for `make`):
 
 ```bash
-make sections  
-make syms      
-make disasm   
-make stackusage 
+make sections     # size of each ELF section
+make syms         # the 25 largest symbols
+make disasm       # source-interleaved listing in build/<example>/firmware.lst
+make stackusage   # rebuild with -fstack-usage, print the largest stack frames
 ```
-
-## Version
-
-v0.1.0
 
 ## License
 
