@@ -6,7 +6,8 @@
  * SPDX-License-Identifier: MIT
  *
  * Every endpoint register access happens in usb_service(), from
- * hal_usb_poll() or the IRQ, never both: in IRQ mode read/write just pend it.
+ * hal_usb_poll() or the IRQ, never both: in IRQ mode poll / read / write pend it
+ * when there is work.
  */
 
 #include "hal_clock.h"
@@ -41,6 +42,7 @@ _Static_assert(USB_CDC_RX_SIZE >= USB_CDC_DATA_SIZE, "RX ring < one packet");
 #define EPR_ALL 0xFFFFU
 
 #define USB_PIN_DP 12U
+#define USB_BARRIER() __asm__ volatile("" ::: "memory")
 #define USB_SYSCLK_HZ 72000000U
 
 #define ISTR_OTHER                                                             \
@@ -64,9 +66,10 @@ static struct {
   USB_Setup setup;
 } ep0;
 
-static bool tx_busy;      /* a packet is armed on 0x81 */
-static bool tx_last_full; /* a 64 B packet went last: owe a ZLP when idle */
-static bool rx_held;      /* 0x01 data waits in PMA (NAK) until the ring has room */
+/* volatile: the thread side reads them to decide whether to pend the IRQ */
+static volatile bool tx_busy;      /* a packet is armed on 0x81 */
+static volatile bool tx_last_full; /* a 64 B packet went last: owe a ZLP */
+static volatile bool rx_held; /* 0x01 data waits in PMA (NAK) for ring room */
 static uint16_t rx_held_len;
 static volatile bool irq_mode;
 
@@ -81,24 +84,20 @@ static volatile uint16_t *btable(uint8_t ep, uint8_t field) {
   return &PMA[(ep * 8U) + (field * 2U)];
 }
 
-static void pma_write(uint16_t addr, const uint8_t *src, uint16_t n) {
-  for (uint16_t i = 0U; i < n; i = (uint16_t)(i + 2U)) {
-    uint16_t v = src[i];
-    if ((i + 1U) < n) {
-      v = (uint16_t)(v | (src[i + 1U] << 8));
-    }
-    PMA[addr + i] = v;
-  }
+static void pma_write(uint16_t addr, const uint8_t *a, uint16_t na,
+                      const uint8_t *b, uint16_t nb) {
+  hal_usb_calc_pma_write(&PMA[addr], a, na, b, nb);
 }
 
-static void pma_read(uint16_t addr, uint8_t *dst, uint16_t n) {
-  for (uint16_t i = 0U; i < n; i = (uint16_t)(i + 2U)) {
-    uint16_t v = PMA[addr + i];
-    dst[i] = (uint8_t)v;
-    if ((i + 1U) < n) {
-      dst[i + 1U] = (uint8_t)(v >> 8);
-    }
-  }
+static void pma_read(uint16_t addr, uint8_t *a, uint16_t na, uint8_t *b,
+                     uint16_t nb) {
+  hal_usb_calc_pma_read(&PMA[addr], a, na, b, nb);
+}
+
+/* the ring bytes from index i on: how many lie before the wrap */
+static uint16_t ring_span(const USB_Ring *r, uint16_t i, uint16_t n) {
+  uint16_t room = (uint16_t)(r->size - (i & (r->size - 1U)));
+  return n < room ? n : room;
 }
 
 /* ---- CDC data endpoints ---- */
@@ -140,9 +139,13 @@ static void cdc_drain_rx(void) {
   if (!rx_held || (hal_usb_ring_free(&rx_ring) < rx_held_len)) {
     return;
   }
-  uint8_t buf[USB_CDC_DATA_SIZE];
-  pma_read(PMA_EP1_RX, buf, rx_held_len);
-  (void)hal_usb_ring_write(&rx_ring, buf, rx_held_len);
+  const uint16_t head = rx_ring.head;
+  const uint16_t n = rx_held_len;
+  const uint16_t first = ring_span(&rx_ring, head, n);
+  pma_read(PMA_EP1_RX, &rx_ring.buf[head & (rx_ring.size - 1U)], first,
+           rx_ring.buf, (uint16_t)(n - first));
+  USB_BARRIER();
+  rx_ring.head = (uint16_t)(head + n);
   rx_held = false;
   epr_set(EP_DATA, USB_EPRX_STAT, USB_EP_RX_VALID);
 }
@@ -151,12 +154,17 @@ static void cdc_kick_tx(void) {
   if ((dev.config == 0U) || tx_busy) {
     return;
   }
-  uint8_t buf[USB_CDC_DATA_SIZE];
-  uint16_t n = (uint16_t)hal_usb_ring_read(&tx_ring, buf, sizeof buf);
+  uint16_t n = (uint16_t)hal_usb_ring_count(&tx_ring);
+  n = n < USB_CDC_DATA_SIZE ? n : (uint16_t)USB_CDC_DATA_SIZE;
   if ((n == 0U) && !tx_last_full) {
     return;
   }
-  pma_write(PMA_EP1_TX, buf, n);
+  const uint16_t tail = tx_ring.tail;
+  const uint16_t first = ring_span(&tx_ring, tail, n);
+  pma_write(PMA_EP1_TX, &tx_ring.buf[tail & (tx_ring.size - 1U)], first,
+            tx_ring.buf, (uint16_t)(n - first));
+  USB_BARRIER();
+  tx_ring.tail = (uint16_t)(tail + n);
   *btable(EP_DATA, BT_COUNT_TX) = n;
   tx_last_full = (n == USB_CDC_DATA_SIZE);
   tx_busy = true;
@@ -183,7 +191,7 @@ static void cdc_service(uint16_t r) {
 static void ep0_send_chunk(void) {
   uint16_t n = (ep0.left < USB_EP0_SIZE) ? ep0.left : (uint16_t)USB_EP0_SIZE;
   if (n > 0U) {
-    pma_write(PMA_EP0_TX, ep0.data, n);
+    pma_write(PMA_EP0_TX, ep0.data, n, NULL, 0U);
     ep0.data += n;
     ep0.left = (uint16_t)(ep0.left - n);
   } else {
@@ -202,7 +210,7 @@ static void ep0_status_in(USB_Action after) {
 
 static void ep0_setup(void) {
   uint8_t raw[8];
-  pma_read(PMA_EP0_RX, raw, sizeof raw);
+  pma_read(PMA_EP0_RX, raw, sizeof raw, NULL, 0U);
   epr_set(0U, USB_EP_CTR_RX, 0U);
 
   ep0.setup = hal_usb_calc_parse_setup(raw);
@@ -246,7 +254,7 @@ static void ep0_out(void) {
     if (n > USB_EP0_SIZE) {
       n = USB_EP0_SIZE;
     }
-    pma_read(PMA_EP0_RX, buf, n);
+    pma_read(PMA_EP0_RX, buf, n, NULL, 0U);
     hal_usb_calc_setup_out(&dev, &ep0.setup, buf, n);
     ep0_status_in(USB_ACTION_NONE);
   } else {
@@ -361,9 +369,20 @@ void hal_usb_init(void) {
   /* the host's bus reset arrives next, and sets up endpoint 0 */
 }
 
+/* IRQ mode: work the IRQ left for later (a held packet that now fits, data
+ * or a ZLP to send while idle); pend it only then */
+static void nudge(void) {
+  bool due = (rx_held && (hal_usb_ring_free(&rx_ring) >= rx_held_len)) ||
+             (!tx_busy && (dev.config != 0U) &&
+              ((hal_usb_ring_count(&tx_ring) != 0U) || tx_last_full));
+  if (due) {
+    __NVIC_SetPendingIRQ(USB_LP_IRQn);
+  }
+}
+
 void hal_usb_poll(void) {
   if (irq_mode) {
-    __NVIC_SetPendingIRQ(USB_LP_IRQn);
+    nudge();
   } else {
     usb_service();
   }
@@ -395,8 +414,8 @@ uint32_t hal_usb_cdc_baud(void) {
 size_t hal_usb_cdc_write(const void *buf, size_t len) {
   HAL_ASSERT((buf != NULL) || (len == 0U));
   size_t n = hal_usb_ring_write(&tx_ring, buf, len);
-  if (irq_mode) {
-    __NVIC_SetPendingIRQ(USB_LP_IRQn);
+  if (irq_mode && (n != 0U)) {
+    nudge();
   }
   return n;
 }
@@ -404,8 +423,8 @@ size_t hal_usb_cdc_write(const void *buf, size_t len) {
 size_t hal_usb_cdc_read(void *buf, size_t max) {
   HAL_ASSERT((buf != NULL) || (max == 0U));
   size_t n = hal_usb_ring_read(&rx_ring, buf, max);
-  if (irq_mode) {
-    __NVIC_SetPendingIRQ(USB_LP_IRQn); /* may release a held packet */
+  if (irq_mode && (n != 0U)) {
+    nudge(); /* may release a held packet */
   }
   return n;
 }

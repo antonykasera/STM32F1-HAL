@@ -39,7 +39,7 @@ Blue Pill, mostly with a logic analyzer; dates are the last check.
 | CRC | yes | 2026-11-08 (flash_store: matches software model) | — |
 | WWDG | calc only | 2026-11-08 (wwdg_demo: early reset, late at 49 ms) | — |
 | Reset cause | calc only | 2026-11-08 (reset_cause: power-on, software, IWDG, WWDG) | — |
-| USB CDC | yes | 2026-11-08 (usb_cdc_echo: enumerate, echo, paste, reset, polled + IRQ) | can't link with CAN |
+| USB CDC | yes | 2026-11-11 (usb_cdc_echo, polled + IRQ; 1.06 MB/s in, 1.13 MB/s out, echo 581 kB/s each way) | can't link with CAN |
 | AFIO remap | yes | 2026-11-08 (CAN on PB8/PB9) | — |
 
 ## Project Structure

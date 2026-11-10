@@ -177,6 +177,8 @@ void test_usb_epr_cases(void);
 void test_usb_epr_exhaustive(void);
 void test_usb_count_rx(void);
 void test_usb_ring_wraps(void);
+void test_usb_ring_random(void);
+void test_usb_pma_spans(void);
 void test_usb_parse_setup(void);
 void test_usb_device_descriptor(void);
 void test_usb_config_descriptor(void);
@@ -326,6 +328,8 @@ int main(void) {
   TEST_RUN(test_usb_epr_exhaustive);
   TEST_RUN(test_usb_count_rx);
   TEST_RUN(test_usb_ring_wraps);
+  TEST_RUN(test_usb_ring_random);
+  TEST_RUN(test_usb_pma_spans);
   TEST_RUN(test_usb_parse_setup);
   TEST_RUN(test_usb_device_descriptor);
   TEST_RUN(test_usb_config_descriptor);

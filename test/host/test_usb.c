@@ -92,6 +92,67 @@ void test_usb_ring_wraps(void) {
   ASSERT_EQ(hal_usb_ring_read(&r, out, 8U), 0U);
 }
 
+/* every split of packets up to 9 bytes, both directions, odd and even spans */
+void test_usb_pma_spans(void) {
+  uint8_t src[9], a[10], b[10];
+  for (uint8_t i = 0U; i < 9U; i++) {
+    src[i] = (uint8_t)(0xA0U + i);
+  }
+  for (uint16_t n = 0U; n <= 9U; n++) {
+    for (uint16_t na = 0U; na <= n; na++) {
+      uint16_t pma[20];
+      memset(pma, 0xEE, sizeof pma);
+      hal_usb_calc_pma_write(pma, src, na, &src[na], (uint16_t)(n - na));
+      for (uint16_t k = 0U; k < 10U; k++) {
+        uint16_t want = 0xEEEEU; /* odd slots: never touched */
+        if (2U * k < n) {
+          want = src[2U * k];
+          if (2U * k + 1U < n) {
+            want = (uint16_t)(want | (src[2U * k + 1U] << 8));
+          }
+        }
+        ASSERT_EQ(pma[2U * k], want);
+        ASSERT_EQ(pma[2U * k + 1U], 0xEEEEU);
+      }
+      memset(a, 0, sizeof a);
+      memset(b, 0, sizeof b);
+      hal_usb_calc_pma_read(pma, a, na, b, (uint16_t)(n - na));
+      ASSERT_TRUE(memcmp(a, src, na) == 0);
+      ASSERT_TRUE(memcmp(b, &src[na], n - na) == 0);
+      ASSERT_EQ(b[n - na], 0U); /* nothing past the packet */
+    }
+  }
+}
+
+/* random writes and reads of every length against a FIFO model */
+void test_usb_ring_random(void) {
+  uint8_t mem[64], model[64], tmp[80];
+  USB_Ring r = {mem, 64U, 65500U, 65500U};
+  uint32_t seed = 12345U, in = 0U, out = 0U;
+  for (int step = 0; step < 20000; step++) {
+    seed = seed * 1103515245U + 12345U;
+    uint16_t n = (uint16_t)((seed >> 16) % 70U);
+    if ((seed & 0x8000U) != 0U) {
+      for (uint16_t i = 0U; i < n; i++) {
+        tmp[i] = (uint8_t)(in + i);
+      }
+      size_t w = hal_usb_ring_write(&r, tmp, n);
+      ASSERT_EQ(w, (n < 64U - (in - out)) ? n : 64U - (in - out));
+      for (size_t i = 0U; i < w; i++) {
+        model[(in + i) % 64U] = (uint8_t)(in + i);
+      }
+      in += (uint32_t)w;
+    } else {
+      size_t got = hal_usb_ring_read(&r, tmp, n);
+      ASSERT_EQ(got, (n < in - out) ? n : in - out);
+      for (size_t i = 0U; i < got; i++) {
+        ASSERT_EQ(tmp[i], model[(out + i) % 64U]);
+      }
+      out += (uint32_t)got;
+    }
+  }
+}
+
 static USB_Device make_dev(void) {
   USB_Device d;
   const uint32_t uid[3] = {0x12345678U, 0x9ABCDEF0U, 0x0F1E2D3CU};

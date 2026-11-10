@@ -30,6 +30,57 @@ uint16_t hal_usb_calc_epr(uint16_t epr, uint16_t mask, uint16_t want) {
   return (uint16_t)w;
 }
 
+/* packet memory holds a halfword per 32-bit word: byte pair k at pma[2 k] */
+void hal_usb_calc_pma_write(volatile uint16_t *pma, const uint8_t *a,
+                            uint16_t na, const uint8_t *b, uint16_t nb) {
+  for (; na >= 2U; na = (uint16_t)(na - 2U), a += 2, pma += 2) {
+    *pma = (uint16_t)(a[0] | (a[1] << 8));
+  }
+  if (na != 0U) { /* a halfword across the two spans */
+    uint16_t v = a[0];
+    if (nb != 0U) {
+      v = (uint16_t)(v | (b[0] << 8));
+      b++;
+      nb--;
+    }
+    *pma = v;
+    pma += 2;
+  }
+  for (; nb >= 2U; nb = (uint16_t)(nb - 2U), b += 2, pma += 2) {
+    *pma = (uint16_t)(b[0] | (b[1] << 8));
+  }
+  if (nb != 0U) {
+    *pma = b[0];
+  }
+}
+
+void hal_usb_calc_pma_read(const volatile uint16_t *pma, uint8_t *a,
+                           uint16_t na, uint8_t *b, uint16_t nb) {
+  for (; na >= 2U; na = (uint16_t)(na - 2U), a += 2, pma += 2) {
+    uint16_t v = *pma;
+    a[0] = (uint8_t)v;
+    a[1] = (uint8_t)(v >> 8);
+  }
+  if (na != 0U) {
+    uint16_t v = *pma;
+    pma += 2;
+    a[0] = (uint8_t)v;
+    if (nb != 0U) {
+      b[0] = (uint8_t)(v >> 8);
+      b++;
+      nb--;
+    }
+  }
+  for (; nb >= 2U; nb = (uint16_t)(nb - 2U), b += 2, pma += 2) {
+    uint16_t v = *pma;
+    b[0] = (uint8_t)v;
+    b[1] = (uint8_t)(v >> 8);
+  }
+  if (nb != 0U) {
+    b[0] = (uint8_t)*pma;
+  }
+}
+
 /* BL_SIZE 0: 2-byte blocks up to 62 B; BL_SIZE 1: 32-byte blocks */
 uint16_t hal_usb_calc_count_rx(uint16_t bytes) {
   HAL_ASSERT((bytes >= 2U) && (bytes <= 512U));
@@ -48,15 +99,22 @@ size_t hal_usb_ring_free(const USB_Ring *r) {
   return r->size - hal_usb_ring_count(r);
 }
 
+static void copy(uint8_t *dst, const uint8_t *src, size_t n) {
+  for (size_t i = 0U; i < n; i++) {
+    dst[i] = src[i];
+  }
+}
+
 size_t hal_usb_ring_write(USB_Ring *r, const uint8_t *src, size_t n) {
   uint16_t head = r->head;
   size_t room = hal_usb_ring_free(r);
   if (n > room) {
     n = room;
   }
-  for (size_t i = 0U; i < n; i++) {
-    r->buf[(uint16_t)(head + i) & (r->size - 1U)] = src[i];
-  }
+  size_t at = head & (r->size - 1U);
+  size_t first = (n < r->size - at) ? n : r->size - at; /* before the wrap */
+  copy(&r->buf[at], src, first);
+  copy(r->buf, &src[first], n - first);
   USB_BARRIER(); /* data before the index the other side reads */
   r->head = (uint16_t)(head + n);
   return n;
@@ -68,9 +126,10 @@ size_t hal_usb_ring_read(USB_Ring *r, uint8_t *dst, size_t n) {
   if (n > avail) {
     n = avail;
   }
-  for (size_t i = 0U; i < n; i++) {
-    dst[i] = r->buf[(uint16_t)(tail + i) & (r->size - 1U)];
-  }
+  size_t at = tail & (r->size - 1U);
+  size_t first = (n < r->size - at) ? n : r->size - at;
+  copy(dst, &r->buf[at], first);
+  copy(&dst[first], r->buf, n - first);
   USB_BARRIER();
   r->tail = (uint16_t)(tail + n);
   return n;

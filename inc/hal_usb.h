@@ -67,6 +67,13 @@ size_t hal_usb_cdc_read(void *buf, size_t max);
 uint16_t hal_usb_calc_epr(uint16_t epr, uint16_t mask, uint16_t want);
 uint16_t hal_usb_calc_count_rx(uint16_t bytes);
 
+/* a packet to / from packet memory as two spans (a ring's wrap); pma steps
+ * by 2 per halfword, the F1's 32-bit stride */
+void hal_usb_calc_pma_write(volatile uint16_t *pma, const uint8_t *a,
+                            uint16_t na, const uint8_t *b, uint16_t nb);
+void hal_usb_calc_pma_read(const volatile uint16_t *pma, uint8_t *a,
+                           uint16_t na, uint8_t *b, uint16_t nb);
+
 /* single producer, single consumer; free-running indices */
 typedef struct {
   uint8_t *buf;
