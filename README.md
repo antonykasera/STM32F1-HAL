@@ -247,7 +247,7 @@ the top of its Makefile:
 APP_DIRS := src drivers        # searched recursively; . works too
 APP_INC  := include
 FLEX_MODULES := gpio clock uart
-FLEXLIB_LIBS := math           # optional flexlib in lib/flexlib: utils, math
+FLEXLIB_LIBS := math           # optional flexlib in lib/flexlib: utils, math, dsp
 ```
 
 Objects keep their folders, so `src/util.c` and `drivers/util.c` don't

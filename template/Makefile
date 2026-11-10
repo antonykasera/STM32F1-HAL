@@ -9,7 +9,7 @@ APP_INC  ?= .
 # dependencies: see flex.mk
 FLEX_MODULES ?= gpio clock
 
-# optional flexlib: utils and/or math
+# optional flexlib: any of utils, math, dsp
 FLEXLIB_DIR  ?= lib/flexlib
 FLEXLIB_LIBS ?=
 
@@ -37,7 +37,7 @@ rwildcard = $(foreach d,$(wildcard $(1:=/*)),$(call rwildcard,$d,$2) $(filter $(
 LIB_ROOTS := $(FLEX_ROOT) $(FLEXLIB_DIR) $(FLEXLIB_ROOT) $(BUILD_ROOT)
 APP_SRCS  := $(filter-out $(foreach r,$(LIB_ROOTS),$(r)/%),\
                $(patsubst ./%,%,$(call rwildcard,$(APP_DIRS),*.c)))
-CSRCS     := $(FLEX_SRCS) $(sort $(FU_SRCS) $(FM_SRCS)) $(APP_SRCS)
+CSRCS     := $(FLEX_SRCS) $(sort $(FLEXLIB_SRCS) $(FU_SRCS) $(FM_SRCS)) $(APP_SRCS)
 
 WARN = -Wall -Wextra -Wshadow -Wconversion -Wsign-conversion -Wdouble-promotion
 ifeq ($(DEBUG),1)
