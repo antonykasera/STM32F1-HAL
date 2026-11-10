@@ -34,7 +34,7 @@ include $(foreach l,$(FLEXLIB_LIBS),$(FLEXLIB_DIR)/flex$(l).mk)
 endif
 
 rwildcard = $(foreach d,$(wildcard $(1:=/*)),$(call rwildcard,$d,$2) $(filter $(subst *,%,$2),$d))
-LIB_ROOTS := $(FLEX_ROOT) $(FLEXLIB_ROOT) $(BUILD_ROOT)
+LIB_ROOTS := $(FLEX_ROOT) $(FLEXLIB_DIR) $(FLEXLIB_ROOT) $(BUILD_ROOT)
 APP_SRCS  := $(filter-out $(foreach r,$(LIB_ROOTS),$(r)/%),\
                $(patsubst ./%,%,$(call rwildcard,$(APP_DIRS),*.c)))
 CSRCS     := $(FLEX_SRCS) $(sort $(FU_SRCS) $(FM_SRCS)) $(APP_SRCS)

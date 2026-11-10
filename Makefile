@@ -107,6 +107,8 @@ template-check:
 	@cp template/Makefile template/linker.ld template/main.c $(TPL)/
 	@printf 'int util_a(void);\nint util_a(void) { return 1; }\n' > $(TPL)/src/util.c
 	@printf 'int util_b(void);\nint util_b(void) { return 2; }\n' > $(TPL)/drivers/util.c
+	@mkdir -p $(TPL)/lib/flexlib/bench
+	@printf '#error "lib/flexlib swept into the app sources"\n' > $(TPL)/lib/flexlib/bench/swept.c
 	$(MAKE) --no-print-directory -C $(TPL) FLEX_DIR=$(CURDIR) EXTRA_CFLAGS=-Werror
 	$(MAKE) --no-print-directory -C $(TPL) FLEX_DIR=../.. BUILD_ROOT=build-rel EXTRA_CFLAGS=-Werror
 	@test -f $(TPL)/build/release/src/util.o && test -f $(TPL)/build/release/drivers/util.o
