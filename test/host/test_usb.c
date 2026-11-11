@@ -126,12 +126,14 @@ void test_usb_pma_spans(void) {
 
 /* random writes and reads of every length against a FIFO model */
 void test_usb_ring_random(void) {
-  uint8_t mem[64], model[64], tmp[80];
+  uint8_t mem[64], model[64], buf[84];
   USB_Ring r = {mem, 64U, 65500U, 65500U};
   uint32_t seed = 12345U, in = 0U, out = 0U;
   for (int step = 0; step < 20000; step++) {
     seed = seed * 1103515245U + 12345U;
     uint16_t n = (uint16_t)((seed >> 16) % 70U);
+    uint8_t *tmp = buf + 1U + ((seed >> 8) & 3U); /* any alignment */
+    memset(buf, 0xEE, sizeof buf);
     if ((seed & 0x8000U) != 0U) {
       for (uint16_t i = 0U; i < n; i++) {
         tmp[i] = (uint8_t)(in + i);
@@ -148,6 +150,8 @@ void test_usb_ring_random(void) {
       for (size_t i = 0U; i < got; i++) {
         ASSERT_EQ(tmp[i], model[(out + i) % 64U]);
       }
+      ASSERT_EQ(tmp[-1], 0xEE); /* nothing written outside */
+      ASSERT_EQ(tmp[got], 0xEE);
       out += (uint32_t)got;
     }
   }

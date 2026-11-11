@@ -47,12 +47,13 @@ void hal_usb_init(void);
 void hal_usb_poll(void);
 void hal_usb_enable_interrupt(uint8_t priority);
 
-bool hal_usb_configured(void); /* enumerated by the host */
-bool hal_usb_cdc_dtr(void);    /* a terminal has the port open */
+bool hal_usb_configured(void);   /* enumerated by the host */
+bool hal_usb_cdc_dtr(void);      /* a terminal has the port open */
 uint32_t hal_usb_cdc_baud(void); /* as set by the host; USB ignores it */
 
 /* non-blocking: return how many bytes were queued / copied out. Queued TX
- * waits in the device until a terminal opens the port. */
+ * waits in the device until terminal opens the port. buf: RAM or flash, any
+ * alignment; with UNALIGN_TRP set, build with -mno-unaligned-access. */
 size_t hal_usb_cdc_write(const void *buf, size_t len);
 size_t hal_usb_cdc_read(void *buf, size_t max);
 
@@ -106,16 +107,16 @@ typedef enum {
   USB_ACTION_NONE,
   USB_ACTION_SET_ADDRESS, /* only after the status IN has gone out */
   USB_ACTION_SET_CONFIG,
-  USB_ACTION_CLEAR_HALT,  /* reset the data toggle of endpoint `ep` */
+  USB_ACTION_CLEAR_HALT, /* reset the data toggle of endpoint `ep` */
 } USB_Action;
 
 typedef struct {
   USB_ReplyKind kind;
   USB_Action action;
   const uint8_t *data;
-  uint16_t len;  /* IN: clipped to wLength; OUT: bytes expected */
-  bool zlp;      /* IN: end with a zero-length packet */
-  uint8_t ep;    /* CLEAR_HALT: endpoint address */
+  uint16_t len; /* IN: clipped to wLength; OUT: bytes expected */
+  bool zlp;     /* IN: end with a zero-length packet */
+  uint8_t ep;   /* CLEAR_HALT: endpoint address */
 } USB_Reply;
 
 typedef struct {

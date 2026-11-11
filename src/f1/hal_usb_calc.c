@@ -15,6 +15,7 @@
 #include "stm32f103xb.h"
 #include <stddef.h>
 #include <stdint.h>
+#include <string.h>
 
 #define EPR_RW (USB_EP_T_FIELD | USB_EP_KIND | USB_EPADDR_FIELD)
 #define EPR_TOGGLE                                                             \
@@ -99,9 +100,15 @@ size_t hal_usb_ring_free(const USB_Ring *r) {
   return r->size - hal_usb_ring_count(r);
 }
 
+/* words where the build allows unaligned access, bytes otherwise */
 static void copy(uint8_t *dst, const uint8_t *src, size_t n) {
-  for (size_t i = 0U; i < n; i++) {
-    dst[i] = src[i];
+  for (; n >= 4U; n -= 4U, src += 4U, dst += 4U) {
+    uint32_t w;
+    memcpy(&w, src, 4U);
+    memcpy(dst, &w, 4U);
+  }
+  while (n-- != 0U) {
+    *dst++ = *src++;
   }
 }
 
@@ -111,10 +118,15 @@ size_t hal_usb_ring_write(USB_Ring *r, const uint8_t *src, size_t n) {
   if (n > room) {
     n = room;
   }
+  if (n == 0U) {
+    return 0U;
+  }
   size_t at = head & (r->size - 1U);
   size_t first = (n < r->size - at) ? n : r->size - at; /* before the wrap */
   copy(&r->buf[at], src, first);
-  copy(r->buf, &src[first], n - first);
+  if (n != first) {
+    copy(r->buf, &src[first], n - first);
+  }
   USB_BARRIER(); /* data before the index the other side reads */
   r->head = (uint16_t)(head + n);
   return n;
@@ -126,10 +138,15 @@ size_t hal_usb_ring_read(USB_Ring *r, uint8_t *dst, size_t n) {
   if (n > avail) {
     n = avail;
   }
+  if (n == 0U) {
+    return 0U;
+  }
   size_t at = tail & (r->size - 1U);
   size_t first = (n < r->size - at) ? n : r->size - at;
   copy(dst, &r->buf[at], first);
-  copy(&dst[first], r->buf, n - first);
+  if (n != first) {
+    copy(&dst[first], r->buf, n - first);
+  }
   USB_BARRIER();
   r->tail = (uint16_t)(tail + n);
   return n;
